@@ -1,74 +1,120 @@
-import { Image, StyleSheet, Platform } from 'react-native';
-
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import React, { useState } from 'react';
+import { Header } from '@/components/Header';
+import { BaseInput, Container, ContainerView } from './styles';
+import { FlatList, Text, TouchableOpacity, View } from 'react-native';
+import { Logo } from '@/components/Logo';
 
 export default function HomeScreen() {
+  const [text, setText] = useState('');
+  const [displayText, setDisplayText] = useState('');
+  const [list, setList] = useState(false);
+  const [buttonListCreate, setButtonListCreate] = useState('Defina um nome para sua lista');
+  const [createListTitle, setCreateListTitle] = useState(false);
+
+  function handleDefineListTile() {
+    if (!createListTitle) {
+      setCreateListTitle(true);
+      setButtonListCreate('Criar lista');
+    }
+
+    if (createListTitle) {
+      alert('Lista criada com sucesso');
+    }
+  }
+
+  function handleChageText(value: string) {
+    setText(value);
+  }
+
+  function handlePress() {
+    setDisplayText(text);
+  }
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <>
+      <Container>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <Logo />
+          <View style={{
+            marginTop: 20,
+            width: '100%',
+            padding: 20,
+            borderRadius: 6,
+          }}>
+            {createListTitle && (
+              <BaseInput
+                style={{ borderColor: 'gray', borderWidth: 1, marginBottom: 20 }}
+                placeholder="Insira um nome para a sua lista"
+                value={text}
+                onChangeText={handleChageText}
+              />
+            )}
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+              <TouchableOpacity
+                onPress={handleDefineListTile}
+                style={styles.createListButton}
+              >
+                <Text style={styles.createListButtonText}>{buttonListCreate}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+        {/* <Header />
+        <ContainerView>
+          <BaseInput
+            style={{ width: '80%', borderColor: 'gray', borderWidth: 1 }}
+            placeholder="Digite algo"
+            value={text}
+            onChangeText={handleChageText}
+          />
+          <TouchableOpacity
+            style={[styles.button, { width: '16%' }]}
+            onPress={handlePress}
+          >
+            <Text style={styles.buttonText}>+</Text>
+          </TouchableOpacity>
+        </ContainerView>
+        <View>
+          {!list ? (
+            <Text>Lista Vazia!!!!</Text>
+          ) : (
+            <FlatList
+              data={displayText}
+              renderItem={({ item }) => <Text>{item}</Text>}
+            />
+          )}
+        </View> */}
+      </Container>
+    </>
   );
 }
 
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+const styles = {
+  button: {
+    height: 40,
+    backgroundColor: 'red',
+    borderRadius: 6,
+    alignItems: 'center' as 'center',
+    justifyContent: 'center' as 'center',
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  buttonText: {
+    marginTop: 2,
+    color: 'white',
+    fontWeight: '600',
+    fontSize: 24,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  createListButton: {
+    backgroundColor: 'red',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 6,
+    justifyContent: 'center' as 'center',
+    alignItems: 'center' as 'center',
+    alignSelf: 'flex-start',
   },
-});
+  createListButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+};
