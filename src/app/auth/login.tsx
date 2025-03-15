@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { View, Text, Alert, StyleSheet, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
+import { View, Text, Alert, StyleSheet } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { MainLogo } from "@/components/Logo";
-import { BaseInput, Container, LoginContent } from "./styles";
 import { CustomCheckBox } from "@/components/CustomCheckBox";
+import { MainButton } from "@/components/MainButton";
+import { BaseInput, Container, LoginContent } from "./styles";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -60,12 +61,9 @@ export default function Login() {
         </View>
       </LoginContent>
       <View style={{ flex: 3, width: '90%', alignItems: 'center' }}>
-        <TouchableOpacity
-          style={styles.createListButton}
-          onPress={handleLogin}
-        >
-          <Text style={styles.createListButtonText}>Entrar</Text>
-        </TouchableOpacity>
+        <MainButton onPress={handleLogin}>
+          Entrar
+        </MainButton>
         <View style={{ justifyContent: 'center', alignItems: 'center', gap: 20 }}>
           <Text>Ou</Text>
           <Text
@@ -83,22 +81,6 @@ const styles = StyleSheet.create({
   LogoContainer: {
     marginTop: 150,
     marginBottom: 50,
-  },
-  createListButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    marginBottom: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#ee2626',
-    width: '90%',
-    height: 50,
-    borderRadius: 26,
-  },
-  createListButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
   },
   checkboxContainer: {
     backgroundColor: 'transparent',
