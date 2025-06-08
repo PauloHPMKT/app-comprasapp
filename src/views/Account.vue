@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { RouterView } from 'vue-router';
-
 </script>
 
 <template>
-  <RouterView />
+  <div class="bg-red-600">
+    teste
+  </div>
 </template>
