@@ -26,7 +26,12 @@ const routes = [
         path: 'purchase-list-creation',
         name: 'purchase-list-creation',
         component: () => import("../views/PurchaseListCreation.vue"),
-      }
+      },
+      {
+        path: 'categories',
+        name: 'categories',
+        component: () => import("../views/Category.vue"),
+      },
     ]
   }
 ];
