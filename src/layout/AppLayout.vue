@@ -59,7 +59,7 @@ function toggleProfileCard() {
               </li>
             </ul>
           </div>
-          <main class="w-full my-4 pl-4 flex">
+          <main class="w-full my-4 pl-4 flex max-h-[85dvh]">
             <Content />
           </main>
         </div>

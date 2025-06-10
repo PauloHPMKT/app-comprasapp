@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from "vue";
 import { Icon } from "@iconify/vue";
-//import { useStyles } from "../../composables/useStyles";
+import { useStyles } from "../composables/useStyles";
 
 interface InputFieldProps {
   placeholder: string;
@@ -10,7 +10,7 @@ interface InputFieldProps {
   hasIcon?: boolean;
 }
 
-// const { mergeStyles, attrs } = useStyles();
+const { mergeStyles, attrs } = useStyles();
 const props = defineProps<InputFieldProps>();
 const emit = defineEmits(["update:modelValue"]);
 
@@ -43,19 +43,15 @@ function handleBlur() {
 </script>
 
 <template>
-  <!-- <div
+  <div
     :class="mergeStyles(`
-      flex border rounded-lg px-2 h-12 items-center '
+      flex border rounded-lg px-2 h-12 items-center w-full'
       ${isFocused ? 'border-gray-500' : 'border-gray-300'}
     `
     )"
-  > -->
-  <div :class="`
-    flex border-2 bg-white rounded-lg px-2 h-12 items-center
-    ${isFocused ? 'border-gray-500' : 'border-gray-200'}
-  `">
+  >
     <input
-      v-bind="$attrs"
+      v-bind="attrs"
       :type="inputType"
       :placeholder="placeholder"
       :value="modelValue"
