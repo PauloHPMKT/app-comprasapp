@@ -1,4 +1,15 @@
+import createRouteGuard from "../guards/create-router.guard";
 import { createRouter, createWebHistory } from "vue-router";
+
+const hasTitleGuard = createRouteGuard(
+  () => !!localStorage.getItem('purchase-list-title'),
+  { name: 'dashboard' }
+);
+
+const hasTokenGuard = createRouteGuard(
+  () => !!localStorage.getItem('token'),
+  { name: 'account' }
+);
 
 const routes = [
   {
@@ -16,6 +27,7 @@ const routes = [
     name: 'app',
     component: () => import("../layout/AppLayout.vue"),
     redirect: { name: 'dashboard' },
+    beforeEnter: hasTokenGuard,
     children: [
       {
         path: 'dashboard',
@@ -25,6 +37,7 @@ const routes = [
       {
         path: 'purchase-list-creation',
         name: 'purchase-list-creation',
+        beforeEnter: hasTitleGuard,
         component: () => import("../views/PurchaseListCreation.vue"),
       },
       {
