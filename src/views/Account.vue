@@ -2,8 +2,12 @@
 import { computed, ref } from 'vue';
 import FormLogin from '../components/FormLogin.vue';
 import FormRegisteer from '../components/FormRegisteer.vue';
+import TransitionEffect from '../components/TransitionEffect.vue';
 import verticalLogo from '@/assets/img/Logo-vertical.png';
 
+import { useAuth } from '../composables/useAuth';
+
+const { onLogin } = useAuth();
 const showFormLogin = ref(true);
 
 const greetingTitle = computed(() =>
@@ -39,10 +43,13 @@ function toggleForm() {
             <p class="text-gray-600 mt-2">{{ greetingMessage }}</p>
           </div>
           <div class="w-full">
-            <transition name="fade" mode="out-in">
-              <FormLogin v-if="showFormLogin" />
+            <TransitionEffect name="fade" mode="out-in">
+              <FormLogin
+                v-if="showFormLogin"
+                @login="onLogin"
+              />
               <FormRegisteer v-else />
-            </transition>
+            </TransitionEffect>
             <div>
               <p class="text-gray-600 mt-4 text-center" @click="toggleForm">
                 {{ ctaAccount }}
@@ -57,12 +64,3 @@ function toggleForm() {
     </div>
   </div>
 </template>
-
-<style scoped>
-.fade-enter-active, .fade-leave-active {
-  transition: opacity 0.5s ease;
-}
-.fade-enter, .fade-leave-to {
-  opacity: 0;
-}
-</style>
