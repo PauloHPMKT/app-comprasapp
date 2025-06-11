@@ -1,24 +1,28 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { Icon } from '@iconify/vue';
 import { useRouter } from 'vue-router';
 import Content from './Content.vue';
 import ProfileCard from '../components/ProfileCard.vue';
 import horizontalLogo from '../assets/img/Logo-horizontal.png'
-//import { useAuthStore } from '../store/auth';
+import { useAuthStore } from '../store/auth';
 
-//const authStore = useAuthStore();
+const authStore = useAuthStore();
 const router = useRouter();
 
 const userProfileCard = ref<typeof ProfileCard | null>(null);
 
-// const firstNameUpperLatter = computed(() => {
-//   return authStore.$state.currentUser.name.charAt(0).toUpperCase();
-// })
+const currentUser = computed(() => {
+  return authStore.$state.currentUser;
+});
 
-// const username = computed(() => {
-//   return authStore.$state.currentUser.name;
-// })
+const firstNameUpperLatter = computed(() => {
+  return currentUser.value.name.charAt(0).toUpperCase();
+})
+
+const username = computed(() => {
+  return currentUser.value.name;
+})
 
 function toCategories() {
   localStorage.removeItem('purchase-list-title');
@@ -41,9 +45,9 @@ function toggleProfileCard() {
           <div class="flex items-center justify-center gap-4">
             <div class="flex items-center gap-2 cursor-pointer relative" @click="toggleProfileCard">
               <span class="bg-gray-700 rounded-full w-12 h-12 flex items-center justify-center text-white cursor-pointer">
-                {{ "H" }}
+                {{ firstNameUpperLatter }}
               </span>
-              <strong class="hidden sm:block">{{ "username" }}</strong>
+              <strong class="hidden sm:block">{{ username }}</strong>
               <ProfileCard ref="userProfileCard" />
             </div>
           </div>

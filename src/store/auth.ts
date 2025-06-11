@@ -22,7 +22,6 @@ export const useAuthStore = defineStore('auth', {
       const accessToken = localStorage.getItem("token");
       if (accessToken) {
         const decode = jwtDecode<{ sub: string } & User>(accessToken);
-        console.log("Decoded access token:", decode);
         const user = {
           id: decode.sub,
           name: decode.name,

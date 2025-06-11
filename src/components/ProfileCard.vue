@@ -1,13 +1,17 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { Icon } from '@iconify/vue';
-//import { useAuthStore } from '../../store/auth';
+import { useAuthStore } from '../store/auth';
 
-//const authStore = useAuthStore();
+const authStore = useAuthStore();
 
 const isCardVisibble = ref(false);
 
-//const user = computed(() => authStore.currentUser);
+const user = computed(() => authStore.currentUser);
+
+const firstNameUpperLatter = computed(() => {
+  return user.value.name.charAt(0).toUpperCase();
+});
 
 function toggleCardVisibility() {
   isCardVisibble.value = !isCardVisibble.value;
@@ -25,13 +29,15 @@ defineExpose({
   >
     <h3 class="font-semibold mb-4 px-4">Minha conta</h3>
     <div class="flex items-center gap-4 border-b border-gray-300 pb-6 px-4">
-      <div class="w-[60px] h-[60px] bg-gray-700 rounded-full flex items-center justify-center">
-        <span class="text-[22px] text-white">H</span>
+      <div class="flex-shrink-0">
+        <div class="w-[60px] h-[60px] bg-gray-700 rounded-full flex items-center justify-center">
+          <span class="text-[22px] text-white">{{ firstNameUpperLatter }}</span>
+        </div>
       </div>
       <div class="flex-1">
-        <h4 class="text-lg font-semibold">{{ "user.name" }}</h4>
-        <p class="text-gray-500">
-          {{ "user.email" }}
+        <h4 class="text-lg font-semibold">{{ user.name }}</h4>
+        <p class="text-gray-500 text-sm sm:text-[16px]">
+          {{ user.email }}
         </p>
       </div>
     </div>

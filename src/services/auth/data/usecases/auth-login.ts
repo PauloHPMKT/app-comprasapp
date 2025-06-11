@@ -14,7 +14,6 @@ export class AuthLoginService implements HandleLogin {
     }
     console.log("Login response data:", data, payload);
     if (payload.token) {
-      console.log("Setting token in localStorage", payload.token);
       localStorage.setItem("token", JSON.stringify(payload.token));
     }
     return {
