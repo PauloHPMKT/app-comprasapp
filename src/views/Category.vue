@@ -5,34 +5,39 @@ import PageHeaderTitle from '../components/PageHeaderTitle.vue';
 import MainButton from '../components/MainButton.vue';
 import NewCategory from '../components/NewCategory.vue';
 import Input from '../components/Input.vue';
-import emptyListImage from '../assets/img/img-lista-vazia.png';
+import CategoriesList from '../components/CategoriesList.vue';
 
 const showCreateNewCategoryModal = ref<typeof NewCategory | null>(null);
 const categories = ref([
-  { name: 'Alimentos', emoji: '🍎' },
-  { name: 'Bebidas', emoji: '🥤' },
-  { name: 'Limpeza', emoji: '🧼' },
-  { name: 'Higiene', emoji: '🧴' },
-  { name: 'Padaria', emoji: '🥖' },
-  { name: 'Carnes', emoji: '🥩' },
-  { name: 'Frutas', emoji: '🍌' },
-  { name: 'Verduras', emoji: '🥦' },
-  { name: 'Laticínios', emoji: '🧀' },
-  { name: 'Doces', emoji: '🍬' },
-  { name: 'Congelados', emoji: '🥶' },
-  { name: 'Grãos', emoji: '🌾' },
-  { name: 'Bebidas Alcoólicas', emoji: '🍺' },
-  { name: 'Produtos Naturais', emoji: '🌿' },
-  { name: 'Produtos Orgânicos', emoji: '🍏' },
-  { name: 'Produtos de Limpeza', emoji: '🧽' },
-  { name: 'Produtos de Higiene', emoji: '🧴' },
-  { name: 'Produtos para Bebês', emoji: '🍼' },
-  { name: 'Produtos para Animais', emoji: '🐾' },
-  { name: 'Outros', emoji: '🔄' }
+  { id: 1, name: 'Alimentos', emoji: '🍎' },
+  { id: 2, name: 'Bebidas', emoji: '🥤' },
+  { id: 3, name: 'Limpeza', emoji: '🧼' },
+  { id: 4, name: 'Higiene', emoji: '🧴' },
+  { id: 5, name: 'Padaria', emoji: '🥖' },
+  { id: 6, name: 'Carnes', emoji: '🥩' },
+  { id: 7, name: 'Frutas', emoji: '🍌' },
+  { id: 8, name: 'Verduras', emoji: '🥦' },
+  { id: 9, name: 'Laticínios', emoji: '🧀' },
+  { id: 10, name: 'Doces', emoji: '🍬' },
+  { id: 11, name: 'Congelados', emoji: '🥶' },
+  { id: 12, name: 'Grãos', emoji: '🌾' },
+  { id: 13, name: 'Bebidas Alcoólicas', emoji: '🍺' },
+  { id: 14, name: 'Produtos Naturais', emoji: '🌿' },
+  { id: 15, name: 'Produtos Orgânicos', emoji: '🍏' },
+  { id: 16, name: 'Produtos de Limpeza', emoji: '🧽' },
+  { id: 17, name: 'Produtos de Higiene', emoji: '🧴' },
+  { id: 18, name: 'Produtos para Bebês', emoji: '🍼' },
+  { id: 19, name: 'Produtos para Animais', emoji: '🐾' },
+  { id: 20, name: 'Outros', emoji: '🔄' }
 ]);
 
 function openNewCategoryModal() {
   showCreateNewCategoryModal.value?.isOpen();
+}
+
+function handleSelectCategory(categoryId: string | number) {
+  console.log("Selected category ID:", categoryId);
+  // Here you can handle the selected category, e.g., navigate to a products page
 }
 
 async function addNewCategory(data: any) {
@@ -74,27 +79,21 @@ async function addNewCategory(data: any) {
 
     <div class="flex-1 overflow-y-auto mt-4">
       <ul v-if="categories.length" class="flex flex-col gap-2 pb-4">
-        <li
-          class="flex items-center justify-between bg-white shadow-md/3 rounded-lg p-3"
+        <CategoriesList
           v-for="category in categories"
-          :key="category.name"
-        >
-          <div class="flex items-center gap-2">
-            <span class="text-2xl">{{ category.emoji }}</span>
-            <p class="text-gray-800 font-bold">{{ category.name }}</p>
-          </div>
-          <Icon
-            icon="mdi:chevron-right"
-            width="24"
-            height="24"
-            class="text-gray-500 cursor-pointer"
-          />
-        </li>
+          :key="category.id"
+          v-bind="category"
+          @select-category="handleSelectCategory"
+        />
       </ul>
 
-      <!-- LISTA VAZIA -->
       <div v-else class="flex flex-col items-center justify-center h-full">
-        <img :src="emptyListImage" alt="Lista vazia" class="w-32 sm:w-58" />
+        <Icon
+          icon="mdi:category"
+          width="64"
+          height="64"
+          class="text-gray-400 mb-4"
+        />
         <h3 class="font-extrabold">Sua lista está vazia!</h3>
         <p class="text-sm text-gray-500">Nenhum item foi adicionado à lista</p>
       </div>

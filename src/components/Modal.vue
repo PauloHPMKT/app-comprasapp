@@ -12,7 +12,7 @@ function closeModal() {
 </script>
 
 <template>
-  <div class="bg-white rounded-lg shadow-md p-6 relative w-[95%] sm:w-[450px]">
+  <div class="bg-white rounded-lg shadow-md max-h-[500px] p-6 relative w-[95%] sm:w-[450px]">
     <Icon
       icon="material-symbols-light:close-small-rounded"
       @click="closeModal"

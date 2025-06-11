@@ -4,8 +4,8 @@ import { Icon } from '@iconify/vue';
 import Input from './Input.vue';
 import MainButton from './MainButton.vue';
 import Overlay from './Overlay.vue';
-// import EmojiPicker from 'vue3-emoji-picker'
-// import '/node_modules/vue3-emoji-picker/dist/style.css';
+import EmojiPicker from 'vue3-emoji-picker'
+import '/node_modules/vue3-emoji-picker/dist/style.css';
 import chooseCategory from '../assets/img/choose-category.png';
 
 interface CategoryProps {
@@ -84,12 +84,12 @@ defineExpose({
             Criar
           </MainButton>
         </div>
-        <!-- <EmojiPicker
+        <EmojiPicker
           v-if="showEmojiPicker"
           :native="true"
           @select="onSelectEmoji"
           class="absolute z-10 top-16 left-0 w-[350px] bg-white rounded-2xl shadow-lg"
-        /> -->
+        />
       </div>
     </div>
   </Overlay>
