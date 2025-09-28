@@ -4,7 +4,7 @@ export interface User {
   email: string;
   password?: string;
   avatar?: string | null;
-  accountId: string;
-  purchaseLists?: string[] | null; // array de listas de compras
+  userId: string;
+  plan: string;
   createdAt: Date;
 }
