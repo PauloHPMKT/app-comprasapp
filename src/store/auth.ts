@@ -1,21 +1,19 @@
 import { defineStore } from "pinia";
 import { jwtDecode } from "jwt-decode";
 import type { User } from "services/auth/domain/entities/User";
-import type { UserModel } from "services/auth/domain/models/user";
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     currentUser: {} as User,
-    token: ""
+    token: "",
   }),
   actions: {
-    async setUser(params: UserModel.Payload) {
-      const { user, token } = params;
-      this.currentUser = user;
+    async setAccessToken(token: string) {
+      localStorage.setItem("token", token);
       this.token = token;
+      this.initializeStore();
 
-      localStorage.setItem("current-user", JSON.stringify(user));
-      return Promise.resolve()
+      return Promise.resolve();
     },
 
     initializeStore() {
@@ -27,11 +25,12 @@ export const useAuthStore = defineStore('auth', {
           name: decode.name,
           email: decode.email,
           avatar: decode.avatar,
-          accountId: decode.accountId,
+          plan: decode.plan,
+          userId: decode.userId,
           createdAt: decode.createdAt,
         }
         this.currentUser = user;
-      }
-    }
-  }
-})
+      };
+    },
+  },
+});

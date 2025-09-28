@@ -9,24 +9,23 @@ export const useAuth = () => {
   const authStore = useAuthStore();
 
   const authLoginService = inject<AuthLoginService>('authLoginService')
-  if (!authLoginService) {
-    throw new Error("AuthLoginService is not provided");
-  }
+  if (!authLoginService) throw new Error("AuthLoginService is not provided");
 
   async function onLogin({ email, password }: Account.ToLogin) {
     try {
-    const { payload, status } = await authLoginService?.execute({
-      email,
-      password,
-    });
-    if (status === 200) {
-      await authStore.setUser(payload);
-      router.push('/app/dashboard');
+      const { token, status } = await authLoginService?.execute({
+        email,
+        password,
+      })!;
+
+      if (status === 200) {
+        await authStore.setAccessToken(token);
+        router.push('/app/dashboard');
+      }
+    } catch (error) {
+      console.error(error);
+      return error;
     }
-  } catch (error) {
-    console.error(error);
-    return error;
-  }
   }
 
   return {
