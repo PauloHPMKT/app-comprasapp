@@ -15,13 +15,18 @@ const routes = [
   {
     path: "/",
     name: "default",
-    redirect: "/account",
+    redirect: "/home",
   },
   {
-    path: "/account",
-    name: "account",
-    component: () => import("../views/Account.vue"),
+    path: "/home",
+    name: "home",
+    component: () => import("../views/Home.vue"),
   },
+  // {
+  //   path: "/account",
+  //   name: "account",
+  //   component: () => import("../views/Account.vue"),
+  // },
   {
     path: '/app',
     name: 'app',
