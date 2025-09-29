@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { useRouter } from 'vue-router';
+import { Icon } from '@iconify/vue';
 import MainButton from '../components/MainButton.vue';
 
 const router = useRouter();
@@ -23,23 +24,25 @@ function navigateToPurchaseListView() {
       src="../assets/img/comprasapp-horizontal-logo.png"
       class="sm:h-16 h-14 object-contain"
     />
-    <!-- TODO Esconder botões no modo responsivo e implementar botao hamburguer -->
     <div class="gap-2 items-center h-full sm:flex hidden">
       <MainButton
         @click="navigateToAccountView"
-        class="bg-gray-200 h-12 hover:bg-gray-300 text-gray-900 font-semibold px-6 rounded-lg"
+        class="bg-gray-200 h-10 hover:bg-gray-300 text-gray-900 font-semibold px-4 rounded-lg"
       >
         Gerenciar minhas listas
       </MainButton>
       <MainButton
         @click="navigateToPurchaseListView"
-        class="bg-[#121212] h-12 hover:bg-gray-800 text-white font-normal px-6 rounded-lg">
+        class="bg-[#121212] h-10 hover:bg-gray-800 text-white font-normal px-4 rounded-lg">
         Criar lista
       </MainButton>
     </div>
+    <div class="sm:hidden flex items-center cursor-pointer">
+      <Icon icon="tabler:align-right" width="40" height="40" />
+    </div>
   </header>
-  <main class="w-full h-[calc(100vh-5rem)] flex items-center justify-center sm:px-32 px-3">
-    <div class="sm:w-1/2 w-full h-full flex flex-col justify-center">
+  <main class="w-full sm:h-[calc(100vh-5rem)] sm:flex items-center justify-center sm:px-32 px-3">
+    <div class="sm:w-1/2 w-full h-full flex flex-col justify-center sm:mt-0 mt-22">
       <div class="mb-12">
         <h1 class="text-4xl sm:text-6xl font-extrabold sm:leading-18 leading-tight">
           Compras<span class="text-red-500">app</span><br/>
@@ -56,14 +59,16 @@ function navigateToPurchaseListView() {
         </MainButton>
       </div>
     </div>
-    <div class="w-1/2 pl-8 h-full hidden sm:flex flex-col items-center justify-center">
-      <div class="relative w-full h-full flex items-center">
+    <div class="sm:w-1/2 w-full sm:pl-8 pl-0 h-full sm:flex flex-col items-center justify-center">
+      <div class="sm:relative w-full h-full flex items-center">
         <img
           alt="Shopping illustration"
           src="../assets/img/banner.png"
-          class="w-full rounded-3xl h-auto object-cover shadow-xl/30 mb-22"
+          class="w-full sm:rounded-3xl rounded-2xl h-auto object-cover shadow-xl/30 mb-22 sm:mt-0 mt-12"
         />
-        <div class="absolute top-0 left-15 h-[550px] w-[540px] -z-10 rounded-b-2xl shadow bg-gray-100"></div>
+        <div
+          class="hidden sm:flex absolute top-0 left-15 h-[550px] w-[540px] -z-10 rounded-b-2xl shadow bg-gray-100"
+        ></div>
       </div>
     </div>
   </main>
