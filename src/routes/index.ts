@@ -8,7 +8,8 @@ const hasTitleGuard = createRouteGuard(
 
 const hasTokenGuard = createRouteGuard(
   () => !!localStorage.getItem('token'),
-  { name: 'account' }
+  { name: 'account' },
+  ['dashboard', 'create-list'] // rotas públicas dentro do layout
 );
 
 const routes = [
@@ -22,11 +23,11 @@ const routes = [
     name: "home",
     component: () => import("../views/Home.vue"),
   },
-  // {
-  //   path: "/account",
-  //   name: "account",
-  //   component: () => import("../views/Account.vue"),
-  // },
+  {
+    path: "/account",
+    name: "account",
+    component: () => import("../views/Account.vue"),
+  },
   {
     path: '/app',
     name: 'app',
@@ -40,8 +41,8 @@ const routes = [
         component: () => import("../views/Dashboard.vue"),
       },
       {
-        path: 'purchase-list-creation',
-        name: 'purchase-list-creation',
+        path: '/create-list',
+        name: 'create-list',
         beforeEnter: hasTitleGuard,
         component: () => import("../views/PurchaseListCreation.vue"),
       },
