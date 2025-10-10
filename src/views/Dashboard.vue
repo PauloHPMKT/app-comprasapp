@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import { Icon } from "@iconify/vue";
 import { useRouter } from "vue-router";
 import MainButton from "../components/MainButton.vue";
@@ -8,8 +8,11 @@ import Overlay from "../components/Overlay.vue";
 import Modal from "../components/Modal.vue";
 // import greenCart from "../assets/img/Logo-carrinho-verde.png";
 import emptyMarket from "../assets/img/img-casas.png";
+import { useLoadingStore } from "../store/loading";
 import { useModal } from "../composables/useModal";
+import InfoCard from "../components/InfoCard.vue";
 
+const loadingStore = useLoadingStore();
 const router = useRouter();
 const { isOpen, open, close } = useModal();
 
@@ -31,9 +34,18 @@ const purchaseListTitle = ref("");
 
 function navigateToCreatePurchaseListView() {
   isOpen.value = false;
-  localStorage.setItem("purchase-list-title", purchaseListTitle.value); // provisório, será utilizado indexDB
-  router.push({ name: "purchase-list-creation" });
+  localStorage.setItem("purchase-list-title", purchaseListTitle.value);
+  router.push({ name: "create-list" });
 }
+
+onMounted(async () => {
+  loadingStore.startLoading();
+  try {
+    await new Promise(resolve => setTimeout(resolve, 1500));
+  } finally {
+    loadingStore.stopLoading();
+  }
+});
 </script>
 
 <template>
@@ -42,10 +54,27 @@ function navigateToCreatePurchaseListView() {
       v-if="purchaseLists.length"
       class="flex justify-center items-center h-full w-full"
     >
-      <div class="flex flex-col items-center justify-center rounded-lg">
-        <img :src="emptyMarket" alt="Mercados vazios" class="w-48 rounded-lg" />
-        <p class="text-gray-500 py-4">Você ainda não possui listas criadas</p>
-        <MainButton @click="open" class="bg-red-600 h-11">
+      <div class="flex flex-col gap-3 items-center justify-center rounded-lg">
+        <div v-if="loadingStore.isLoading" class="w-52 h-26 rounded-lg animate-pulse flex items-center justify-center" style="animation-duration: 1.5s;">
+          <div class="w-full h-full bg-gray-200 rounded-lg"></div>
+        </div>
+        <img v-else :src="emptyMarket" alt="Mercados vazios" class="w-48 rounded-lg" />
+        <div>
+          <div
+            v-if="loadingStore.isLoading"
+            class="w-68 h-8 rounded-lg animate-pulse flex items-center justify-center" style="animation-duration: 1.5s;"
+          >
+            <div class="w-full h-full bg-gray-200 rounded-lg"></div>
+          </div>
+          <p v-else class="text-gray-500 py-4">Você ainda não possui listas criadas</p>
+        </div>
+        <div
+          v-if="loadingStore.isLoading"
+          class="w-36 h-12 rounded-lg animate-pulse flex items-center justify-center" style="animation-duration: 1.5s;"
+        >
+          <div class="w-full h-full bg-gray-200 rounded-lg"></div>
+        </div>
+        <MainButton v-else @click="open" class="bg-red-500 h-11 rounded-md">
           Ir às compras
         </MainButton>
       </div>
@@ -197,24 +226,28 @@ function navigateToCreatePurchaseListView() {
 
     <Overlay v-if="isOpen">
       <Modal :modal-value="isOpen" @close="close">
-        <h3 class="font-bold">Adicione um título à lista</h3>
-        <span class="text-gray-500 text-[14px] -leading-6">
-          Para melhor organização das suas listas de compras adicione um título
+        <h3 class="font-bold text-2xl pb-4">Adicione um título à lista</h3>
+        <InfoCard info-category="info">
+          Para melhor organização das suas listas adicione um título
           a cada uma delas.
-        </span>
-        <div class="flex flex-col items-center gap-4 mt-4">
-          <Input
-            placeholder="Insira o título da lista"
-            v-model="purchaseListTitle"
-            class="w-full h-11 border-2"
+        </InfoCard>
+        <Input
+          placeholder="nome da lista"
+          v-model="purchaseListTitle"
+          class="w-full h-11 border-2 mt-4"
+        />
+        <MainButton
+          @click="navigateToCreatePurchaseListView"
+          class="bg-red-600 h-11 w-full mt-3"
+        >
+          Criar Lista
+          <Icon
+            icon="tabler:pencil-star"
+            width="24"
+            height="24"
+            class="text-white"
           />
-          <MainButton
-            @click="navigateToCreatePurchaseListView"
-            class="bg-red-600 h-11 w-full"
-          >
-            Criar Lista
-          </MainButton>
-        </div>
+        </MainButton>
       </Modal>
     </Overlay>
   </div>
