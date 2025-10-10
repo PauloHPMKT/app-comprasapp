@@ -1,17 +1,23 @@
 <script lang="ts" setup>
+import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { Icon } from '@iconify/vue';
 import MainButton from '../components/MainButton.vue';
 
 const router = useRouter();
+const isMenuOpen = ref(false);
+
+function toggleMenu() {
+  isMenuOpen.value = !isMenuOpen.value;
+}
 
 function navigateToAccountView() {
   router.push({ name: "account" });
 }
 
-function navigateToPurchaseListView() {
+function navigateToDashboardView() {
   // fazer implementação do componente de input do nome da lista
-  router.push({ name: "purchase-list" });
+  router.push({ name: "dashboard" });
 }
 </script>
 
@@ -32,13 +38,35 @@ function navigateToPurchaseListView() {
         Gerenciar minhas listas
       </MainButton>
       <MainButton
-        @click="navigateToPurchaseListView"
+        @click="navigateToDashboardView"
         class="bg-[#121212] h-10 hover:bg-gray-800 text-white font-normal px-4 rounded-lg">
         Criar lista
       </MainButton>
     </div>
-    <div class="sm:hidden flex items-center cursor-pointer">
-      <Icon icon="tabler:align-right" width="40" height="40" />
+    <div class=" sm:hidden flex items-center cursor-pointer">
+      <Icon @click="toggleMenu" icon="tabler:align-right" width="40" height="40" />
+      <Transition
+        enter-active-class="transition duration-300 ease-out"
+        enter-from-class="transform -translate-x-full opacity-0"
+        enter-to-class="transform translate-x-0 opacity-100"
+        leave-active-class="transition duration-200 ease-in"
+        leave-from-class="transform translate-x-0 opacity-100"
+        leave-to-class="transform -translate-x-full opacity-0"
+      >
+        <div v-if="isMenuOpen" class="absolute top-0 right-0 bg-white border border-gray-200 shadow-lg w-full">
+          <div class="absolute top-3 right-3 px-4">
+            <Icon @click="toggleMenu" icon="iconamoon:close-light" width="40" height="40" />
+          </div>
+          <ul class="p-0 m-0 list-none text-lg">
+            <li class="py-6 px-8 border-b border-gray-100" @click="navigateToAccountView">
+              Gerenciar minhas listas
+            </li>
+            <li class="py-6 px-8" @click="navigateToDashboardView">
+              Criar lista
+            </li>
+          </ul>
+        </div>
+      </Transition>
     </div>
   </header>
   <main class="w-full sm:h-[calc(100vh-5rem)] sm:flex items-center justify-center sm:px-32 px-3">
@@ -52,7 +80,7 @@ function navigateToPurchaseListView() {
           Organize suas compras com o Comprasapp.<br/> Crie e gerencie listas de compras de forma prática, onde e quando quiser.
         </p>
         <MainButton
-          @click="navigateToPurchaseListView"
+          @click="navigateToDashboardView"
           class="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-lg mt-8 w-fit"
         >
           Criar minha lista de compras
@@ -110,3 +138,9 @@ function navigateToPurchaseListView() {
     </div>
   </footer>
 </template>
+
+<style scoped>
+.transition {
+  transition-property: all;
+}
+</style>
