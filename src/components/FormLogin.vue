@@ -1,24 +1,15 @@
 <script setup lang="ts">
-import { reactive } from 'vue';
 import Input from './Input.vue';
-import type { Account } from 'types/account';
 import MainButton from './MainButton.vue';
+import { useAuth } from '../composables/useAuth';
 
-const emit = defineEmits(['login']);
+const { loginData, onLogin } = useAuth();
 
-const loginData = reactive<Account.ToLogin>({
-  email: '',
-  password: '',
-})
-
-function handleLogin() {
-  emit('login', loginData as Account.ToLogin);
-}
 </script>
 
 <template>
   <form
-    @submit.prevent="handleLogin"
+    @submit.prevent="onLogin(loginData)"
     class="w-full max-w-md flex flex-col gap-3"
   >
     <Input
@@ -37,13 +28,13 @@ function handleLogin() {
         <input type="checkbox" class="form-checkbox text-blue-600" />
         <span class="ml-2 text-gray-700">Lembrar-me</span>
       </label>
-      <span class="text-red-600 hover:underline">Esqueci minha senha</span>
+      <span class="text-red-500 hover:underline">Esqueci minha senha</span>
     </div>
     <MainButton
       type="submit"
-      class="bg-red-600 text-white px-4 py-2 h-11 rounded-md mt-4"
+      class="bg-red-500 text-white px-4 py-2 h-11 rounded-md mt-4"
     >
-      Login
+      Entrar
     </MainButton>
   </form>
 </template>

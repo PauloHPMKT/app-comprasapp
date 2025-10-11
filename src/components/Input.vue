@@ -8,6 +8,8 @@ interface InputFieldProps {
   isPassword?: boolean;
   modelValue?: string;
   hasIcon?: boolean;
+  hasError?: boolean;
+  errorMessage?: string;
 }
 
 const { mergeStyles, attrs } = useStyles();
@@ -25,8 +27,7 @@ watch(
 );
 
 function togglePassword() {
-  inputType.value =
-    inputType.value === "password" ? "text" : "password";
+  inputType.value = inputType.value === "password" ? "text" : "password";
 }
 
 function updateValue(e: Event) {
@@ -44,11 +45,13 @@ function handleBlur() {
 
 <template>
   <div
-    :class="mergeStyles(`
-      flex border rounded-lg px-2 h-12 items-center w-full'
-      ${isFocused ? 'border-gray-500' : 'border-gray-300'}
-    `
-    )"
+    :class="
+      mergeStyles(`
+        flex border rounded-lg px-2 h-12 items-center w-full'
+        ${isFocused ? 'border-gray-500' : 'border-gray-300'}
+        ${hasError ? 'border-red-500' : ''}
+      `)
+    "
   >
     <input
       v-bind="attrs"
@@ -60,11 +63,7 @@ function handleBlur() {
       @blur="handleBlur"
       class="w-full h-full outline-none border-none"
     />
-    <div
-      v-if="isPassword"
-      class="cursor-pointer"
-      @click="togglePassword"
-    >
+    <div v-if="isPassword" class="cursor-pointer" @click="togglePassword">
       <Icon
         :icon="`tabler:${inputType === 'password' ? 'eye-off' : 'eye'}`"
         class="flex items-center w-11"
@@ -72,4 +71,5 @@ function handleBlur() {
     </div>
     <slot v-if="hasIcon"></slot>
   </div>
+  <small v-if="hasError" class="text-red-500">{{ errorMessage }}</small>
 </template>
