@@ -1,15 +1,15 @@
 import { twMerge } from "tailwind-merge"
-import { computed, useAttrs } from "vue"
+import { useAttrs } from "vue"
 
 export const useStyles = () => {
   const attrs = useAttrs()
 
-  const mergeStyles = computed(() => {
-    return (baseStyle: string) => twMerge(
-      baseStyle,
+  function mergeStyles(...styles: (string | undefined | null)[]) {
+    return twMerge(
+      ...styles.filter(Boolean),
       attrs.class as string || "",
     )
-  })
+  }
 
   return {
     mergeStyles,
