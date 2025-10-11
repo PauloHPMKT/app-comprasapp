@@ -21,7 +21,7 @@ const borderColorClass = computed(() => {
 
 <template>
   <div
-    class="w-full flex items-center p-4 rounded border-l-6 bg-gray-200"
+    class="w-full flex items-center p-2 rounded border-l-6 bg-gray-200"
     :class="borderColorClass"
   >
     <span class="text-gray-700 text-[14px] leading-5">
