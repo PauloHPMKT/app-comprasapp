@@ -1,21 +1,16 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, provide, ref } from "vue";
 import { Icon } from "@iconify/vue";
 import { useRouter } from "vue-router";
 import MainButton from "../components/MainButton.vue";
-import Input from "../components/Input.vue";
 import Overlay from "../components/Overlay.vue";
-import Modal from "../components/Modal.vue";
-// import greenCart from "../assets/img/Logo-carrinho-verde.png";
-import emptyMarket from "../assets/img/img-casas.png";
+import CreateListTitleModal from "../components/CreateListTitleModal.vue";
 import { useLoadingStore } from "../store/loading";
 import { useModal } from "../composables/useModal";
-import InfoCard from "../components/InfoCard.vue";
+import { useValidation } from "../composables/useValidation";
+import emptyMarket from "../assets/img/img-casas.png";
 
-const loadingStore = useLoadingStore();
-const router = useRouter();
-const { isOpen, open, close } = useModal();
-
+const purchaseListTitle = ref("");
 const purchaseLists = ref([
   {
     id: 1,
@@ -30,12 +25,33 @@ const purchaseLists = ref([
     date: "2025-01-01",
   },
 ]);
-const purchaseListTitle = ref("");
+
+const loadingStore = useLoadingStore();
+const router = useRouter();
+const { isOpen, open, close } = useModal();
+const { useFieldValidation } = useValidation();
+const {
+  validateField,
+  hasError,
+  errorMessage,
+  clearError
+} = useFieldValidation(purchaseListTitle);
+
+provide('modalActions', { open, close, resetModal });
 
 function navigateToCreatePurchaseListView() {
-  isOpen.value = false;
+  const isValid = validateField();
+  if (!isValid) return;
+
   localStorage.setItem("purchase-list-title", purchaseListTitle.value);
   router.push({ name: "create-list" });
+  close();
+}
+
+function resetModal() {
+  clearError();
+  purchaseListTitle.value = "";
+  close();
 }
 
 onMounted(async () => {
@@ -225,30 +241,13 @@ onMounted(async () => {
     </div>
 
     <Overlay v-if="isOpen">
-      <Modal :modal-value="isOpen" @close="close">
-        <h3 class="font-bold text-2xl pb-4">Adicione um título à lista</h3>
-        <InfoCard info-category="info">
-          Para melhor organização das suas listas adicione um título
-          a cada uma delas.
-        </InfoCard>
-        <Input
-          placeholder="nome da lista"
-          v-model="purchaseListTitle"
-          class="w-full h-11 border-2 mt-4"
-        />
-        <MainButton
-          @click="navigateToCreatePurchaseListView"
-          class="bg-red-600 h-11 w-full mt-3"
-        >
-          Criar Lista
-          <Icon
-            icon="tabler:pencil-star"
-            width="24"
-            height="24"
-            class="text-white"
-          />
-        </MainButton>
-      </Modal>
+      <CreateListTitleModal
+        :purchase-list-title="purchaseListTitle"
+        :hasError="hasError"
+        :errorMessage="errorMessage"
+        @update:purchase-list-title="purchaseListTitle = $event"
+        @navigate-to-create-purchase-list-view="navigateToCreatePurchaseListView"
+      />
     </Overlay>
   </div>
 </template>
