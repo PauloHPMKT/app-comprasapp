@@ -5,7 +5,6 @@ export const useModal = () => {
 
   function open() {
     isOpen.value = true;
-    console.log("Opening modal", isOpen.value);
   }
 
   function close() {
