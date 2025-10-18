@@ -48,8 +48,36 @@ export const useValidation = () => {
     };
   }
 
+  function formsValidation<T extends Record<string, any>>(
+    data: T
+  ): { error: boolean; message: string } {
+    const requiredFields = Object.keys(data) as Array<keyof T>;
+    const allFieldsVerify = requiredFields.every((field) => !data[field]);
+    if (allFieldsVerify) {
+      // ver se é possível passar o hasError para os inputs
+      return {
+        error: true,
+        message: `preencha todos os campos corretamente`
+      };
+    }
+    for (const field of requiredFields) {
+      if (!data[field]) {
+        const typeField = field === "password" ? "senha" : field;
+        return {
+          error: true,
+          message: `preencha o campo ${String(typeField)}`
+        };
+      }
+    }
+    return {
+      error: false,
+      message: '',
+    };
+  }
+
   return {
     isValueEmpty,
     useFieldValidation,
+    formsValidation
   }
 }

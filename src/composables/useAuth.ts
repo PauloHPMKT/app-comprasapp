@@ -18,13 +18,19 @@ export const useAuth = () => {
     email: '',
     password: '',
   });
+  const createAccountData = reactive<Account.ToCreate>({
+    name: '',
+    email: '',
+    password: '',
+    passwordConfirmation: '',
+  });
 
   const router = useRouter();
   const authStore = useAuthStore();
 
   async function onLogin({ email, password }: Account.ToLogin) {
     const isValid = formsValidation(loginData);
-    if (!isValid.error) {
+    if (isValid.error) {
       addToast({
         id: Date.now().toString(),
         message: isValid.message,
@@ -56,8 +62,23 @@ export const useAuth = () => {
     }
   }
 
+  function createAccountUser() {
+    const isValid = formsValidation(createAccountData);
+    if (isValid.error) {
+      addToast({
+        id: Date.now().toString(),
+        message: isValid.message,
+        type: 'error',
+        duration: 5000,
+      });
+      return;
+    }
+  }
+
   return {
     loginData,
+    createAccountData,
     onLogin,
+    createAccountUser,
   }
 }
