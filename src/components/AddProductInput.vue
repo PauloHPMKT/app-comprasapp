@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed, reactive } from 'vue';
+import { computed, reactive, ref } from 'vue';
 import { Icon } from '@iconify/vue';
 import Input from './Input.vue';
 import MainButton from './MainButton.vue';
@@ -7,6 +7,7 @@ import type { Item } from '../types/item';
 import { useAuthStore } from '../store/auth';
 import { useValidation } from '../composables/useValidation';
 import { useToast } from '../composables/useToast';
+import CategorySelector from './CategorySelector.vue';
 
 const authStore = useAuthStore();
 const { formsValidation } = useValidation();
@@ -52,6 +53,8 @@ const categories = reactive<Item.Category[]>([
   { id: '19', name: 'Produtos para Animais', emoji: '🐾', color: '#8D6E63' }, // marrom
   { id: '20', name: 'Outros', emoji: '🔄', color: '#BDBDBD' } // cinza
 ]);
+const selectCategory = ref(false);
+const selectedCategory = ref<{ name: string; emoji: string }>({ name: 'Carnes', emoji: '🥩', });
 
 const isLoggedIn = computed(() => {
   return authStore.isAuthenticated;
@@ -67,6 +70,11 @@ const displayPrice = computed({
   set(value) { product.price = value === '' ? 0 : Number(value) }
 });
 
+// function handleCreateNewCategory() {
+//   // repassar a variavel de controle do CategorySelector para fechar o modal
+//   showCreateNewCategoryModal.value?.isOpen();
+// }
+
 function addProduct() {
   const { name, quantity, price } = product;
   const isValid = formsValidation({
@@ -74,7 +82,6 @@ function addProduct() {
     quantity,
     price,
   });
-  console.log(isValid);
   if (isValid.error) {
     addToast({
       id: Date.now().toString(),
@@ -86,24 +93,35 @@ function addProduct() {
   }
   emit('add-product', product);
 }
+
+function clearForm() {
+  product.name = '';
+  product.category = { name: '', emoji: '', color: '' };
+  product.observation = '';
+  product.quantity = 0;
+  product.price = 0;
+  product.totalItemPrice = 0;
+}
+
+defineExpose({
+  clearForm
+});
 </script>
 
 <template>
-  <div class="hidden sm:flex gap-2 w-full sm:w-[90%]">
+  <!-- ✅ Mobile: coluna com gap | Desktop: linha com gap -->
+  <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-[90%]">
     <Input
       v-model="product.name"
       placeholder="Nome do item"
-      class="w-1/2 border-2 h-11"
+      class="sm:w-1/2 border-2 h-11"
     />
-    <div class="flex gap-2 w-fit">
-      <!-- tratar com lazy loading -->
-      <!-- <CategorySelector
-        v-if="isLoggedIn"
-        v-model="selectedCategory"
+    <!-- ✅ Mobile: coluna com gap | Desktop: linha com gap -->
+    <div class="flex flex-col sm:flex-row gap-2 sm:w-fit">
+      <CategorySelector
         :categories="categories"
-        :is-not-reponsive-mode="true"
-        @create-new-category="handleCreateNewCategory"
-      /> -->
+        v-model="selectedCategory"
+      />
       <Input
         v-model="displayQuantity"
         placeholder="Quantidade"
@@ -112,12 +130,12 @@ function addProduct() {
       <Input
         v-model="displayPrice"
         placeholder="Valor R$"
-        class="w-[160px] border-2 h-11"
+        class="w-full sm:w-[160px] border-2 h-11"
       />
     </div>
     <MainButton
       @click="addProduct"
-      class="bg-red-500 w-[250px] text-white h-11 rounded-md flex items-center justify-center"
+      class="bg-red-500 w-full sm:w-[250px] text-white h-11 rounded-md flex items-center justify-center gap-2"
     >
       <span>Adicionar Produto</span>
       <Icon icon="mdi:plus" width="20" height="20" />
