@@ -54,21 +54,30 @@ export const useValidation = () => {
     const requiredFields = Object.keys(data) as Array<keyof T>;
     const allFieldsVerify = requiredFields.every((field) => !data[field]);
     if (allFieldsVerify) {
-      // ver se é possível passar o hasError para os inputs
+      const errorString = 'preencha todos os campos corretamente';
+      hasError.value = true;
+      errorMessage.value = errorString;
+
       return {
         error: true,
-        message: `preencha todos os campos corretamente`
+        message: errorString
       };
     }
     for (const field of requiredFields) {
       if (!data[field]) {
         const typeField = field === "password" ? "senha" : field;
+        const errorString = `preencha o campo ${String(typeField)}`;
+        hasError.value = true;
+        errorMessage.value = errorString;
         return {
           error: true,
-          message: `preencha o campo ${String(typeField)}`
+          message: errorString
         };
       }
     }
+    hasError.value = false;
+    errorMessage.value = '';
+
     return {
       error: false,
       message: '',
@@ -78,6 +87,8 @@ export const useValidation = () => {
   return {
     isValueEmpty,
     useFieldValidation,
-    formsValidation
+    formsValidation,
+    hasError,
+    errorMessage,
   }
 }

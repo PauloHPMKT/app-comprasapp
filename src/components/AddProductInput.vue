@@ -10,7 +10,7 @@ import { useToast } from '../composables/useToast';
 import CategorySelector from './CategorySelector.vue';
 
 const authStore = useAuthStore();
-const { formsValidation } = useValidation();
+const { formsValidation, hasError, errorMessage } = useValidation();
 const { addToast } = useToast();
 
 interface Emits {
@@ -31,6 +31,13 @@ const product = reactive<Item.ToPurchase>({
   price: 0,
   totalItemPrice: 0,
 });
+
+const fieldErrors = reactive({
+  name: false,
+  quantity: false,
+  price: false,
+});
+
 const categories = reactive<Item.Category[]>([
   { id: '1', name: 'Alimentos', emoji: '🍎', color: '#FF7043' }, // laranja
   { id: '2', name: 'Bebidas', emoji: '🥤', color: '#29B6F6' }, // azul claro
@@ -77,6 +84,11 @@ const displayPrice = computed({
 
 function addProduct() {
   const { name, quantity, price } = product;
+   // ✅ Valida individualmente cada campo
+  fieldErrors.name = !name || name.trim() === '';
+  fieldErrors.quantity = !quantity || quantity === 0;
+  fieldErrors.price = !price || price === 0;
+
   const isValid = formsValidation({
     name,
     quantity,
@@ -89,6 +101,8 @@ function addProduct() {
       type: 'error',
       duration: 3000,
     })
+    hasError.value = true;
+    errorMessage.value = isValid.message;
     return;
   }
   emit('add-product', product);
@@ -101,6 +115,25 @@ function clearForm() {
   product.quantity = 0;
   product.price = 0;
   product.totalItemPrice = 0;
+
+  fieldErrors.name = false;
+  fieldErrors.quantity = false;
+  fieldErrors.price = false;
+}
+
+function handleNameInput(value: string) {
+  product.name = value;
+  if (value.trim()) fieldErrors.name = false;
+}
+
+function handleQuantityInput(value: string | number) {
+  product.quantity = value === '' ? 0 : Number(value);
+  if (product.quantity > 0) fieldErrors.quantity = false;
+}
+
+function handlePriceInput(value: string | number) {
+  product.price = value === '' ? 0 : Number(value);
+  if (product.price > 0) fieldErrors.price = false;
 }
 
 defineExpose({
@@ -109,33 +142,41 @@ defineExpose({
 </script>
 
 <template>
-  <!-- ✅ Mobile: coluna com gap | Desktop: linha com gap -->
-  <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-[90%]">
+  <div class="flex flex-col sm:flex-row gap-1 w-full sm:w-[90%]">
     <Input
-      v-model="product.name"
+      :model-value="product.name"
+      @update:model-value="handleNameInput"
       placeholder="Nome do item"
+      :has-error="fieldErrors.name"
       class="sm:w-1/2 border-2 h-11"
     />
-    <!-- ✅ Mobile: coluna com gap | Desktop: linha com gap -->
-    <div class="flex flex-col sm:flex-row gap-2 sm:w-fit">
+
+    <div class="flex flex-col sm:flex-row gap-1 sm:w-fit">
+      <Input
+        :model-value="displayQuantity"
+        @update:model-value="handleQuantityInput"
+        placeholder="Quantidade"
+        :has-error="fieldErrors.quantity"
+        class="border-2 h-11"
+      />
+
+      <Input
+        :model-value="displayPrice"
+        @update:model-value="handlePriceInput"
+        placeholder="Valor R$"
+        :has-error="fieldErrors.price"
+        class="w-full sm:w-[160px] border-2 h-11"
+      />
+
       <CategorySelector
         :categories="categories"
         v-model="selectedCategory"
       />
-      <Input
-        v-model="displayQuantity"
-        placeholder="Quantidade"
-        class="border-2 h-11"
-      />
-      <Input
-        v-model="displayPrice"
-        placeholder="Valor R$"
-        class="w-full sm:w-[160px] border-2 h-11"
-      />
     </div>
+
     <MainButton
       @click="addProduct"
-      class="bg-red-500 w-full sm:w-[250px] text-white h-11 rounded-md flex items-center justify-center gap-2"
+      class="bg-gray-900 w-full sm:ml-1 sm:w-[250px] text-white h-11 rounded-md flex items-center justify-center mt-4 sm:mt-0"
     >
       <span>Adicionar Produto</span>
       <Icon icon="mdi:plus" width="20" height="20" />
