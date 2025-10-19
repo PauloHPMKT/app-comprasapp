@@ -2,9 +2,10 @@
 import { Icon } from '@iconify/vue';
 
 interface CategoryProps {
-  id: string | number;
+  id?: string | number;
   name: string;
   emoji: string;
+  color?: string;
   isSelected?: boolean;
   omitArrow?: boolean;
 }
@@ -12,7 +13,7 @@ interface CategoryProps {
 defineProps<CategoryProps>();
 const emits = defineEmits(['select-category']);
 
-function categorySelected(id: string | number) {
+function categorySelected(id?: string | number) {
   emits('select-category', id);
 }
 </script>
@@ -20,7 +21,8 @@ function categorySelected(id: string | number) {
 <template>
   <li
     @click="categorySelected(id)"
-    class="flex items-center justify-between bg-white shadow-md/3 rounded-lg p-3"
+    class="flex items-center justify-between bg-white shadow-md/3 py-3 px-4"
+    :style="{ borderLeftColor: color || '#CCCCCC', borderLeftWidth: '6px', borderLeftStyle: 'solid' }"
   >
     <div class="flex items-center gap-2">
       <span class="text-2xl">{{ emoji }}</span>

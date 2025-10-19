@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed, reactive, ref } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import { Icon } from '@iconify/vue';
 import Input from './Input.vue';
 import MainButton from './MainButton.vue';
@@ -38,30 +38,7 @@ const fieldErrors = reactive({
   price: false,
 });
 
-const categories = reactive<Item.Category[]>([
-  { id: '1', name: 'Alimentos', emoji: '🍎', color: '#FF7043' }, // laranja
-  { id: '2', name: 'Bebidas', emoji: '🥤', color: '#29B6F6' }, // azul claro
-  { id: '3', name: 'Limpeza', emoji: '🧼', color: '#81C784' }, // verde claro
-  { id: '4', name: 'Higiene', emoji: '🧴', color: '#BA68C8' }, // roxo claro
-  { id: '5', name: 'Padaria', emoji: '🥖', color: '#FFD54F' }, // amarelo
-  { id: '6', name: 'Carnes', emoji: '🥩', color: '#E57373' }, // vermelho claro
-  { id: '7', name: 'Frutas', emoji: '🍌', color: '#FFF176' }, // amarelo claro
-  { id: '8', name: 'Verduras', emoji: '🥦', color: '#66BB6A' }, // verde
-  { id: '9', name: 'Laticínios', emoji: '🧀', color: '#FFF9C4' }, // amarelo bem claro
-  { id: '10', name: 'Doces', emoji: '🍬', color: '#F06292' }, // rosa
-  { id: '11', name: 'Congelados', emoji: '🥶', color: '#4FC3F7' }, // azul gelo
-  { id: '12', name: 'Grãos', emoji: '🌾', color: '#A1887F' }, // marrom claro
-  { id: '13', name: 'Bebidas Alcoólicas', emoji: '🍺', color: '#FFD600' }, // amarelo ouro
-  { id: '14', name: 'Produtos Naturais', emoji: '🌿', color: '#388E3C' }, // verde escuro
-  { id: '15', name: 'Produtos Orgânicos', emoji: '🍏', color: '#AED581' }, // verde orgânico
-  { id: '16', name: 'Produtos de Limpeza', emoji: '🧽', color: '#00B8D4' }, // azul piscina
-  { id: '17', name: 'Produtos de Higiene', emoji: '🧴', color: '#CE93D8' }, // lilás
-  { id: '18', name: 'Produtos para Bebês', emoji: '🍼', color: '#B3E5FC' }, // azul bebê
-  { id: '19', name: 'Produtos para Animais', emoji: '🐾', color: '#8D6E63' }, // marrom
-  { id: '20', name: 'Outros', emoji: '🔄', color: '#BDBDBD' } // cinza
-]);
-const selectCategory = ref(false);
-const selectedCategory = ref<{ name: string; emoji: string }>({ name: 'Carnes', emoji: '🥩', });
+const selectedCategory = ref<{ name: string; emoji: string, color?: string }>({ name: '', emoji: '', color: '' });
 
 const isLoggedIn = computed(() => {
   return authStore.isAuthenticated;
@@ -76,6 +53,14 @@ const displayPrice = computed({
   get() { return product.price === 0 ? '' : product.price },
   set(value) { product.price = value === '' ? 0 : Number(value) }
 });
+
+watch(selectedCategory, (newCategory) => {
+  product.category = {
+    name: newCategory.name,
+    emoji: newCategory.emoji,
+    color: newCategory.color || '#E5E7EB'
+  };
+}, { deep: true });
 
 // function handleCreateNewCategory() {
 //   // repassar a variavel de controle do CategorySelector para fechar o modal
@@ -142,20 +127,22 @@ defineExpose({
 </script>
 
 <template>
-  <div class="flex flex-col sm:flex-row gap-1 w-full sm:w-[90%]">
-    <Input
-      :model-value="product.name"
-      @update:model-value="handleNameInput"
-      placeholder="Nome do item"
-      :has-error="fieldErrors.name"
-      class="sm:w-1/2 border-2 h-11"
-    />
+  <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-full ">
+    <div class="sm:w-[50%]">
+      <Input
+        :model-value="product.name"
+        @update:model-value="handleNameInput"
+        placeholder="Nome do item"
+        :has-error="fieldErrors.name"
+        class="border-2 h-11"
+      />
+    </div>
 
-    <div class="flex flex-col sm:flex-row gap-1 sm:w-fit">
+    <div class="flex flex-col sm:flex-row gap-1 sm:w-[45%] w-full">
       <Input
         :model-value="displayQuantity"
         @update:model-value="handleQuantityInput"
-        placeholder="Quantidade"
+        placeholder="Qtde."
         :has-error="fieldErrors.quantity"
         class="border-2 h-11"
       />
@@ -165,11 +152,11 @@ defineExpose({
         @update:model-value="handlePriceInput"
         placeholder="Valor R$"
         :has-error="fieldErrors.price"
-        class="w-full sm:w-[160px] border-2 h-11"
+        class="border-2 h-11"
       />
 
       <CategorySelector
-        :categories="categories"
+        v-if="isLoggedIn"
         v-model="selectedCategory"
       />
     </div>
