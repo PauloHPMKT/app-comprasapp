@@ -7,6 +7,7 @@ import { useAuthStore } from '../store/auth';
 type EmitEvents = {
   (e: 'delete-item', id: number): void;
   (e: 'edit-item'): void;
+  (e: 'add-observation', id: number): void;
 };
 type ItemProps = Item.ToPurchase;
 
@@ -36,6 +37,11 @@ function closeMenu() {
 
 function removeItem(id: number) {
   emit('delete-item', id);
+  closeMenu();
+}
+
+function addObservation(id: number) {
+  emit('add-observation', id);
   closeMenu();
 }
 </script>
@@ -140,6 +146,13 @@ function removeItem(id: number) {
         'w-0 translate-x-full': !isMenuOpen
       }"
     >
+      <Icon
+        icon="wpf:note"
+        width="20"
+        height="20"
+        class="text-white cursor-pointer hover:text-gray-300 transition-colors"
+        @click="addObservation(props.orderId!)"
+      />
       <Icon
         icon="mdi:trash-can-outline"
         width="24"
