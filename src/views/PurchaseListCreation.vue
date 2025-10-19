@@ -11,8 +11,10 @@ import AddProductInput from "../components/AddProductInput.vue";
 import { useModal } from "../composables/useModal";
 import type { Item } from "types/item";
 import emptyListImage from "../assets/img/empty-list.png";
+import { useToast } from "../composables/useToast";
 
 const { isOpen, open, close } = useModal();
+const { addToast } = useToast();
 //const { purchaseItems, productItem, addPurchaseItemToList } = usePurchaseList();
 
 const observationText = ref("");
@@ -51,7 +53,9 @@ function showObservationModal() {
 function addProductInListOrObservation(product: Item.ToPurchase) {
   currentProduct.value = product;
   if (!localStorage.getItem('disable-observation-question')) {
-    return showObservationModal();
+    toggleAddProductMobileInput();
+    showObservationModal();
+    return;
   }
 
   return includeProductInList();
@@ -96,6 +100,15 @@ function includeProductInList() {
       totalItemPrice: (Number(currentProduct.value?.quantity) * Number(currentProduct.value?.price)).toFixed(2),
     };
     purchaseItems.value.push(productToAdd);
+
+    if (addProductInput.value) {
+      addToast({
+        id: Date.now().toString(),
+        message: `O item "${productToAdd.name}" foi adicionado à lista!`,
+        type: 'success',
+        duration: 2000,
+      });
+    }
   }
 
   addProductInputRef.value?.clearForm();
