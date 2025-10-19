@@ -68,7 +68,7 @@ function addObservation(id: number) {
           }"
         >
           <p
-            class="text-gray-800 font-bold text-[16px] sm:text-[20px] truncate"
+            class="text-gray-800 font-bold text-[16px] sm:text-[20px]"
             :title="name"
           >
             {{ name }}
@@ -84,7 +84,7 @@ function addObservation(id: number) {
         </div>
 
         <div class="flex sm:justify-between flex-shrink-0 transition-all duration-300 ease-in-out">
-          <div class="flex flex-col items-start justify-start sm:mr-4 sm:w-[200px] mr-12">
+          <div class="flex flex-col items-start justify-start sm:mr-4 sm:w-[200px] mr-4">
             <span>{{ quantity }}</span>
           </div>
           <div class="text-right min-w-[100px]">
@@ -154,16 +154,16 @@ function addObservation(id: number) {
         @click="addObservation(props.orderId!)"
       />
       <Icon
-        icon="mdi:trash-can-outline"
-        width="24"
-        height="24"
+        icon="mage:trash"
+        width="28"
+        height="28"
         class="text-white cursor-pointer hover:text-gray-300 transition-colors"
         @click="removeItem(props.orderId!)"
       />
       <Icon
         icon="lucide:edit"
-        width="20"
-        height="20"
+        width="22"
+        height="22"
         class="text-white cursor-pointer hover:text-gray-300 transition-colors"
         @click="$emit('edit-item')"
       />

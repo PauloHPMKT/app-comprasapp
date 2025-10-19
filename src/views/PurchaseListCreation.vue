@@ -17,9 +17,11 @@ const { isOpen, open, close } = useModal();
 
 const observationText = ref("");
 const editingItemId = ref<number | null>(null);
+const removingItemId = ref<number | null>(null);
 const addProductInput = ref(false);
 const addObservation = ref(false);
 const disableObservationQuestion = ref(false);
+const isRemoveConfirmationOpen = ref(false);
 const purchaseItems = ref<Item.ToPurchase[]>([]);
 const currentProduct = ref<Item.ToPurchase | null>(null);
 const purchaseListTitle = ref(localStorage.getItem("purchase-list-title"));
@@ -35,6 +37,11 @@ const calculateTotalItemsPrice = computed(() => {
   return purchaseItems.value.reduce((acc, item) => {
     return acc + Number(item.totalItemPrice);
   }, 0).toFixed(2);
+});
+
+const itemToRemove = computed(() => {
+  const item = purchaseItems.value.find(item => item.orderId === removingItemId.value);
+  return item ? item.name : '';
 });
 
 function showObservationModal() {
@@ -139,8 +146,16 @@ function toggleAddProductMobileInput() {
   addProductInput.value = !addProductInput.value;
 }
 
-function removeItem(id: number) {
-  purchaseItems.value = purchaseItems.value.filter(item => item.orderId !== id);
+function toggleRemoveItemModalConfirmation(orderId?: number) {
+  isRemoveConfirmationOpen.value = !isRemoveConfirmationOpen.value;
+  if (orderId) {
+    removingItemId.value = orderId;
+  }
+}
+
+function removeItem() {
+  purchaseItems.value = purchaseItems.value.filter(item => item.orderId !== removingItemId.value);
+  toggleRemoveItemModalConfirmation();
 }
 </script>
 
@@ -182,7 +197,7 @@ function removeItem(id: number) {
         v-for="(item, index) in reversedPurchaseItems"
         :key="index"
         v-bind="item"
-        @delete-item="removeItem(item.orderId!)"
+        @delete-item="toggleRemoveItemModalConfirmation(item.orderId!)"
         @add-observation="openObservationNotePad(item.orderId!)"
       />
     </ul>
@@ -290,6 +305,32 @@ function removeItem(id: number) {
                 @add-product="addProductInListOrObservation"
                 class="mt-4"
               />
+            </div>
+          </div>
+        </template>
+      </ModalLayout>
+    </Overlay>
+
+    <!-- Modal de confirmação de remoção -->
+    <Overlay v-if="isRemoveConfirmationOpen">
+      <ModalLayout @close="toggleRemoveItemModalConfirmation">
+        <template #body>
+          <div class="flex flex-col w-full">
+            <h3 class="text-[18px] font-bold text-red-600">Remover item</h3>
+            <span class="text-gray-500 text-[16px] -leading-6 mb-4">
+              Tem certeza que deseja remover o item <strong class="text-gray-800">{{ itemToRemove }}</strong> da lista?
+            </span>
+
+            <div class="flex gap-2 justify-end w-full">
+              <MainButton
+                @click="toggleRemoveItemModalConfirmation"
+                class="border-2 border-gray-300 h-11 w-fit text-gray-700 rounded-md hover:bg-gray-100"
+              >
+                Cancelar
+              </MainButton>
+              <MainButton @click="removeItem" class="bg-red-500 text-white h-11 w-24  rounded-md">
+                Remover
+              </MainButton>
             </div>
           </div>
         </template>
