@@ -67,7 +67,7 @@ function handleCreateNewCategory() {
     <div
       v-if="isDropdownOpen"
       v-bind="attrs"
-      :class="mergeStyles(`absolute right-0 z-10 bg-white shadow-md rounded-sm mt-1 w-[300px]`)"
+      :class="mergeStyles(`absolute bottom-0 sm:right-0 z-10 bg-white shadow-md rounded-sm mt-1 w-[350px]`)"
     >
       <div class="p-3 border-b border-gray-200">
         <Input
