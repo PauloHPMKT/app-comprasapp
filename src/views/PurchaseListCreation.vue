@@ -189,7 +189,7 @@ function removeItem() {
       <div class="w-full sm:w-[80%] flex sm:hidden">
         <MainButton
           @click="toggleAddProductMobileInput"
-          class="bg-red-500 w-full text-white h-11 rounded-md mt-4"
+          class="bg-gray-900 w-full text-white h-11 rounded-md mt-4"
         >
           <p>Adicionar Produto</p>
           <Icon icon="mdi:plus" width="20" height="20" />
