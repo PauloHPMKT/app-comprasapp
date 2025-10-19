@@ -1,201 +1,146 @@
 <script setup lang="ts">
-import { computed, reactive, ref } from "vue";
+import { computed, ref } from "vue";
 import { Icon } from "@iconify/vue";
 import PageHeaderTitle from "../components/PageHeaderTitle.vue";
 import MainButton from "../components/MainButton.vue";
 import Overlay from "../components/Overlay.vue";
-import Modal from "../components/Modal.vue";
-import Input from "../components/Input.vue";
+import PurchaseItem from "../components/Item.vue";
+//import NewCategory from "../components/NewCategory.vue";
+import ModalLayout from "../components/ModalLayout.vue";
+import AddProductInput from "../components/AddProductInput.vue";
 import { useModal } from "../composables/useModal";
-import TransitionEffect from "../components/TransitionEffect.vue";
-import emptyListImage from "../assets/img/img-lista-vazia.png";
-import CategorySelector from "../components/CategorySelector.vue";
-import NewCategory from "../components/NewCategory.vue";
+import type { Item } from "types/item";
+import emptyListImage from "../assets/img/empty-list.png";
 
 const { isOpen, open, close } = useModal();
+//const { purchaseItems, productItem, addPurchaseItemToList } = usePurchaseList();
 
+const observationText = ref("");
+const editingItemId = ref<number | null>(null);
+const addProductInput = ref(false);
+const addObservation = ref(false);
+const disableObservationQuestion = ref(false);
+const purchaseItems = ref<Item.ToPurchase[]>([]);
+const currentProduct = ref<Item.ToPurchase | null>(null);
 const purchaseListTitle = ref(localStorage.getItem("purchase-list-title"));
-const showCreateNewCategoryModal = ref<typeof NewCategory | null>(null);
-const purchaseItems = ref([
-  {
-    id: 1,
-    name: 'Arroz',
-    category: {
-      name: 'Grãos',
-      icon: '🍚'
-    },
-    quantity: 4,
-    price: 10.00
-  },
-  {
-    id: 2,
-    name: 'Pão',
-    category: {
-      name: 'Padaria',
-      icon: '🥖'
-    },
-    quantity: 2,
-    price: 6.78
-  },
-  {
-    id: 3,
-    name: 'Banana',
-    category: {
-      name: 'Hortifrutti',
-      icon: '🍌'
-    },
-    quantity: 6,
-    price: 3.50
-  },
-  {
-    id: 4,
-    name: 'Leite',
-    category: {
-      name: 'Laticínios',
-      icon: '🥛'
-    },
-  },
-  {
-    id: 5,
-    name: 'Sabão em pó',
-    category: {
-      name: 'Limpeza',
-      icon: '🧼'
-    },
-    quantity: 1,
-    price: 15.00
-  },
-  {
-    id: 6,
-    name: 'Cerveja',
-    category: {
-      name: 'Bebidas',
-      icon: '🍺'
-    },
-    quantity: 12,
-    price: 3.50
-  },
-  {
-    id: 7,
-    name: 'Frango',
-    category: {
-      name: 'Carnes',
-      icon: '🍗'
-    },
-    quantity: 2,
-    price: 20.00
-  },
-  {
-    id: 8,
-    name: 'Maçã',
-    category: {
-      name: 'Hortifrutti',
-      icon: '🍎'
-    },
-    quantity: 5,
-    price: 2.50
-  },
-  {
-    id: 9,
-    name: 'Detergente',
-    category: {
-      name: 'Limpeza',
-      icon: '🧽'
-    },
-    quantity: 1,
-    price: 4.00
-  },
-  {
-    id: 10,
-    name: 'Iogurte',
-    category: {
-      name: 'Laticínios',
-      icon: '🥛'
-    },
-    quantity: 3,
-    price: 5.00
-  },
-  {
-    id: 11,
-    name: 'Biscoito',
-    category: {
-      name: 'Doces',
-      icon: '🍪'
-    },
-    quantity: 2,
-    price: 3.00
-  },
-  {
-    id: 12,
-    name: 'Ovos',
-    category: {
-      name: 'Laticínios',
-      icon: '🥚'
-    },
-    quantity: 12,
-    price: 7.00
-  }
-]);
-const categories = reactive([
-  { id: 1, name: 'Alimentos', emoji: '🍎' },
-  { id: 2, name: 'Bebidas', emoji: '🥤' },
-  { id: 3, name: 'Limpeza', emoji: '🧼' },
-  { id: 4, name: 'Higiene', emoji: '🧴' },
-  { id: 5, name: 'Padaria', emoji: '🥖' },
-  { id: 6, name: 'Carnes', emoji: '🥩' },
-  { id: 7, name: 'Frutas', emoji: '🍌' },
-  { id: 8, name: 'Verduras', emoji: '🥦' },
-  { id: 9, name: 'Laticínios', emoji: '🧀' },
-  { id: 10, name: 'Doces', emoji: '🍬' },
-  { id: 11, name: 'Congelados', emoji: '🥶' },
-  { id: 12, name: 'Grãos', emoji: '🌾' },
-  { id: 13, name: 'Bebidas Alcoólicas', emoji: '🍺' },
-  { id: 14, name: 'Produtos Naturais', emoji: '🌿' },
-  { id: 15, name: 'Produtos Orgânicos', emoji: '🍏' },
-  { id: 16, name: 'Produtos de Limpeza', emoji: '🧽' },
-  { id: 17, name: 'Produtos de Higiene', emoji: '🧴' },
-  { id: 18, name: 'Produtos para Bebês', emoji: '🍼' },
-  { id: 19, name: 'Produtos para Animais', emoji: '🐾' },
-  { id: 20, name: 'Outros', emoji: '🔄' }
-]);
-const selectCategory = ref(false);
-const productItem = reactive({
-  name: '',
-  category: {
-    name: '',
-    icon: ''
-  },
-  quantity: '',
-  price: ''
-});
+const addProductInputRef = ref<InstanceType<typeof AddProductInput>>();
+
+//const showCreateNewCategoryModal = ref<typeof NewCategory | null>(null);
 
 const reversedPurchaseItems = computed(() => {
   return [...purchaseItems.value].reverse();
 });
 
-function addPurchaseItemToList() {
-  const item = {
-    id: purchaseItems.value.length + 1,
-    name: productItem.name,
-    category: { // caso nao haja categoria tem que enviar null
-      name: productItem.category.name || 'Sem categoria',
-      icon: productItem.category.icon || '🔄'
-    },
-    quantity: parseInt(productItem.quantity) || 1,
-    price: parseFloat(productItem.price) || 0.00
+const calculateTotalItemsPrice = computed(() => {
+  return purchaseItems.value.reduce((acc, item) => {
+    return acc + Number(item.totalItemPrice);
+  }, 0).toFixed(2);
+});
+
+function showObservationModal() {
+  open();
+}
+
+function addProductInListOrObservation(product: Item.ToPurchase) {
+  currentProduct.value = product;
+  if (!localStorage.getItem('disable-observation-question')) {
+    return showObservationModal();
   }
-  console.log("Item adicionado:", item);
-  purchaseItems.value.push(item);
-  close();
+
+  return includeProductInList();
 }
 
-function handleCreateNewCategory() {
-  // repassar a variavel de controle do CategorySelector para fechar o modal
-  showCreateNewCategoryModal.value?.isOpen();
+function includeObservationInList() {
+  const observation = observationText.value;
+
+  if (editingItemId.value) {
+    const itemIndex = purchaseItems.value.findIndex(item => item.orderId === editingItemId.value);
+    if (itemIndex !== -1) {
+      purchaseItems.value[itemIndex].observation = observation;
+    }
+    closeObservationNotePad();
+    return;
+  }
+
+  if (currentProduct.value) {
+    currentProduct.value.observation = observation;
+  }
+
+  closeObservationNotePad();
+  includeProductInList();
 }
 
-function addNewCategory() {
-  alert("teste");
+function includeProductInList() {
+  if (disableObservationQuestion.value) {
+    localStorage.setItem("disable-observation-question", "true");
+    disableObservationQuestion.value = true;
+  }
+
+  if (currentProduct.value) {
+    const productToAdd = {
+      ...currentProduct.value,
+      orderId: purchaseItems.value.length + 1,
+      category: {
+        name: currentProduct.value?.category?.name || 'Sem categoria',
+        color: currentProduct.value?.category?.color || '#E5E7EB',
+        emoji: currentProduct.value?.category?.emoji || ''
+      },
+      observation: currentProduct.value?.observation || '',
+      totalItemPrice: (Number(currentProduct.value?.quantity) * Number(currentProduct.value?.price)).toFixed(2),
+    };
+    purchaseItems.value.push(productToAdd);
+  }
+
+  addProductInputRef.value?.clearForm();
+  currentProduct.value = null;
+  observationText.value = "";
+
+  if (isOpen.value) {
+    close();
+  }
+}
+
+function savePurchaseList() {
+  if (localStorage.getItem('disable-observation-question')) {
+    localStorage.removeItem("disable-observation-question");
+    disableObservationQuestion.value = false;
+  }
+  alert('A lista foi salva!!! deu bom!!! bora comprar mais!!!')
+}
+
+function openObservationNotePad(OrderId?: number) {
+  if (isOpen.value) {
+    close();
+  }
+
+  const itemToAddObservation = purchaseItems.value.some(item => item.orderId === OrderId);
+  if (OrderId && itemToAddObservation) {
+    editingItemId.value = OrderId;
+    addObservation.value = true;
+    return;
+  }
+  addObservation.value = true;
+}
+
+function closeObservationNotePad() {
+  addObservation.value = false;
+  observationText.value = "";
+
+  if (editingItemId.value) {
+    editingItemId.value = null;
+  }
+}
+
+function cleanObservationInput() {
+  observationText.value = "";
+}
+
+function toggleAddProductMobileInput() {
+  addProductInput.value = !addProductInput.value;
+}
+
+function removeItem(id: number) {
+  purchaseItems.value = purchaseItems.value.filter(item => item.orderId !== id);
 }
 </script>
 
@@ -204,46 +149,19 @@ function addNewCategory() {
     <div class="pb-4 border-b-2 border-gray-300 w-full">
       <PageHeaderTitle
         :title="purchaseListTitle!"
-        subtitle="Insira os dados e preencha sua lista de compras."
+        subtitle="Insira os dados dos produtos para preencera sua lista de compras."
         class="mb-0"
       />
-      <div class="hidden sm:flex gap-2 w-full sm:w-[80%]">
-        <Input
-          v-model="productItem.name"
-          class="w-1/2 border-2 h-11"
-          placeholder="Nome do item"
-        />
-        <div class="flex gap-2 w-1/2">
-          <CategorySelector
-            v-model="productItem.category"
-            :categories="categories"
-            :is-not-reponsive-mode="true"
-            @create-new-category="handleCreateNewCategory"
-            class="w-[400px]"
-          />
-          <Input
-            v-model="productItem.quantity"
-            class="border-2 h-11"
-            placeholder="Quantidade"
-          />
-          <Input
-            v-model="productItem.price"
-            class="w-[160px] border-2 h-11"
-            placeholder="Valor R$"
-          />
-        </div>
-        <MainButton
-          @click="addPurchaseItemToList"
-          class="bg-red-600 text-white h-11 rounded-md flex items-center justify-center"
-        >
-          <Icon icon="mdi:plus" width="20" height="20" />
-        </MainButton>
-      </div>
+      <AddProductInput
+        ref="addProductInputRef"
+        @add-product="addProductInListOrObservation"
+        class="mt-4 hidden sm:flex"
+      />
       <!-- Button for responsive mobile sm -->
       <div class="w-full sm:w-[80%] flex sm:hidden">
         <MainButton
-          @click="open"
-          class="bg-red-600 w-full text-white h-11 rounded-md mt-4"
+          @click="toggleAddProductMobileInput"
+          class="bg-red-500 w-full text-white h-11 rounded-md mt-4"
         >
           <p>Adicionar Produto</p>
           <Icon icon="mdi:plus" width="20" height="20" />
@@ -251,35 +169,22 @@ function addNewCategory() {
       </div>
     </div>
 
+    <div v-if="!purchaseItems.length" class="flex flex-col items-center justify-center h-[75%]">
+      <img :src="emptyListImage" alt="Lista vazia" class="w-32 sm:w-58" />
+      <h3 class="font-extrabold">Sua lista está vazia!</h3>
+      <p class="text-sm text-gray-500">Nanhum item foi adicionado a lista</p>
+    </div>
     <ul
-      v-if="purchaseItems.length"
-      class="flex-1 overflow-y-auto py-2 space-y-2 w-full"
+      v-else
+      class="flex-1 overflow-y-auto space-y-2 w-full bg-gray-100"
     >
-      <li
+      <PurchaseItem
         v-for="(item, index) in reversedPurchaseItems"
-        :key="item.id || index"
-        class="bg-white shadow-md/3 rounded-lg p-3 flex flex-col gap-2"
-      >
-        <div class="flex items-center justify-between">
-          <p class="text-gray-800 font-bold text-[16px] sm:text-[20px]">
-            {{ item.name }}
-          </p>
-          <div
-            class="flex items-center justify-between min-w-[120px] sm:min-w-[300px]"
-          >
-            <span>{{ item.quantity }}</span>
-            <p class="font-extrabold">
-              {{ item.price }}
-            </p>
-          </div>
-        </div>
-        <div class="flex items-center justify-between">
-          <span class="text-gray-400">
-            {{ item.category.icon }}
-            {{ item.category.name || "Sem categoria" }}
-          </span>
-        </div>
-      </li>
+        :key="index"
+        v-bind="item"
+        @delete-item="removeItem(item.orderId!)"
+        @add-observation="openObservationNotePad(item.orderId!)"
+      />
     </ul>
 
     <div
@@ -287,95 +192,108 @@ function addNewCategory() {
       class="h-[14%] sm:h-[15%] flex items-center justify-between text-gray-500 border-t border-gray-300"
     >
       <div>
-        total de itens: <span class="font-extrabold text-gray-900">10</span>
+        total de itens: <span class="font-extrabold text-gray-900">{{ purchaseItems.length }}</span>
         <br />
-        total gasto: <span class="font-extrabold text-gray-900">R$ 50,00</span>
+        total gasto: <span class="font-extrabold text-gray-900">R$ {{ calculateTotalItemsPrice }}</span>
       </div>
-      <MainButton class="bg-red-600 text-white w-12 h-12" @click="close">
+      <MainButton class="bg-gray-900 text-white w-fit h-11" @click="savePurchaseList">
+        Finalizar Lista
         <Icon icon="mdi:check" width="20" height="20" />
       </MainButton>
     </div>
 
-    <div v-else class="flex flex-col items-center justify-center h-[75%]">
-      <img :src="emptyListImage" alt="Lista vazia" class="w-32 sm:w-58" />
-      <h3 class="font-extrabold">Sua lista está vazia!</h3>
-      <p class="text-sm text-gray-500">Nanhum item foi adicionado a lista</p>
-    </div>
+    <!-- <NewCategory ref="showCreateNewCategoryModal" @create-category="addNewCategory" class="z-10" /> -->
 
-    <NewCategory ref="showCreateNewCategoryModal" @create-category="addNewCategory" class="z-10" />
+    <Overlay v-if="addObservation">
+      <div class="w-[90%] shadow-2xl bg-amber-100 sm:w-[700px] h-[400px] flex flex-col items-center rounded-none relative">
+        <div class="w-full bg-amber-300 p-4 flex items-center justify-center relative shadow-sm">
+          <Icon
+            icon="mdi:close"
+            width="24"
+             height="24"
+             class="text-[#121212] absolute top-4 right-4 cursor-pointer"
+             @click="closeObservationNotePad"
+          />
+          <h2 class="text-[#121212] text-[18px] sm:text-2xl font-bold">Observações</h2>
+        </div>
+        <textarea
+          v-model="observationText"
+          class="outline-none p-4 w-full h-[90%] resize-none"
+        ></textarea>
+        <div v-if="observationText.length" class="w-full flex justify-end absolute bottom-0 right-4">
+          <MainButton class="text-gray-600 w-fit h-11 rounded-none hover:underline" @click="cleanObservationInput">
+            Limpar anotaões
+          </MainButton>
+          <MainButton class="text-[#121212] w-fit h-11 rounded-none hover:underline" @click="includeObservationInList">
+            Salvar
+          </MainButton>
+        </div>
+      </div>
+    </Overlay>
+
     <Overlay v-if="isOpen">
-      <Modal :modal-value="isOpen" @close="close">
-        <TransitionEffect>
-          <div v-if="!selectCategory" class="w-full mb-3">
+      <div
+        class="w-[90%] sm:w-[600px] min-h-[200px] bg-white rounded-sm p-4 shadow-2xl flex flex-col items-center justify-between gap-6"
+      >
+        <div class="w-full h-full flex items-start">
+          <Icon
+            icon="mdi:alert-circle"
+            class="text-yellow-500"
+            width="34"
+            height="34"
+          />
+            <div class="ml-3 w-[90%]">
+            <h3 class="text-[20px] font-semibold mb-3">Deseja adicionar uma observação para este item?</h3>
+            <p class="text-gray-500 mb-4">
+              Caso deseje, é possível incluir uma observação para este item como forma de lembrete ou informação adicional.
+            </p>
+            <label for="observation" class="flex items-center">
+              <input
+                type="checkbox"
+                id="observation"
+                v-model="disableObservationQuestion"
+                class="mr-2 w-4 h-4"
+                />
+              <p>
+                Não mostrar mais esta pergunta durante a criação dessa lista
+              </p>
+            </label>
+            </div>
+        </div>
+        <div class="flex gap-2 justify-end w-full">
+          <MainButton
+            @click="includeProductInList"
+            class="border-2 border-gray-300 h-11 w-fit text-gray-700 rounded-md hover:bg-gray-100"
+          >
+            Não, apenas salvar
+          </MainButton>
+          <MainButton @click="openObservationNotePad" class="bg-red-500 text-white h-11 w-24  rounded-md">
+            Sim
+          </MainButton>
+        </div>
+      </div>
+    </Overlay>
+
+    <!-- Modal for responsive layout -->
+    <Overlay v-if="addProductInput" class="sm:hidden">
+      <ModalLayout @close="toggleAddProductMobileInput">
+        <template #body>
+          <div class="flex flex-col w-full">
             <h3 class="font-bold">Adicione um item à lista</h3>
             <span class="text-gray-500 text-[14px] -leading-6">
               Preencha os campos para adicionar um item a lista.
             </span>
-            <div class="flex flex-col items-center gap-3 mt-4">
-              <Input
-                v-model="productItem.name"
-                placeholder="Nome do produto"
-                class="w-full h-11 border-2"
-              />
-              <div class="flex w-full gap-2 items-center">
-                <CategorySelector
-                  v-model="productItem.category"
-                  :categories="categories"
-                  class="w-full"
-                />
-                <MainButton
-                  class="h-11 bg-red-600"
-                  @click="handleCreateNewCategory"
-                >
-                  <Icon
-                    icon="mdi:plus"
-                    width="20"
-                    height="20"
-                    class="text-white"
-                  />
-                </MainButton>
-              </div>
-              <div class="w-full flex gap-2 items-center">
-                <Input
-                  v-model="productItem.quantity"
-                  placeholder="Quantidade"
-                  class="w-full h-11 border-2"
-                />
-                <Input
-                  v-model="productItem.price"
-                  placeholder="Valor do item (R$)"
-                  class="w-full h-11 border-2"
-                />
-              </div>
-            </div>
-          </div>
-          <div v-else>
-            <h3 class="font-bold mb-4">Selecione uma categoria</h3>
-            <Input
-              placeholder="Nome da categoria"
-              class="w-full h-11 border-2"
-              :has-icon="true"
-            >
-              <Icon
-                icon="material-symbols:search-rounded"
-                width="24"
-                height="24"
-                class="flex items-center w-10 text-gray-500 cursor-pointer"
-              />
-            </Input>
-            <div class="h-48 overflow-y-auto mt-4 mb-2">
-              <CategorySelector
-                v-model="productItem.category"
-                :categories="categories"
-                class="w-full"
+
+            <div class="w-full">
+              <AddProductInput
+                ref="addProductInputRef"
+                @add-product="addProductInListOrObservation"
+                class="mt-4"
               />
             </div>
           </div>
-        </TransitionEffect>
-        <MainButton @click="addPurchaseItemToList" class="bg-red-600 h-11 w-full">
-          Adicionar produto
-        </MainButton>
-      </Modal>
+        </template>
+      </ModalLayout>
     </Overlay>
   </div>
 </template>
