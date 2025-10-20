@@ -64,7 +64,7 @@ function handleCloseModal() {
           </div>
           <MainButton
             @click="handleSubmitToNewList"
-            class="bg-red-500 h-11 w-full sm:w-fit mt-3 sm:mt-0"
+            class="bg-gray-800 h-11 w-full sm:w-fit mt-3 sm:mt-0"
             :class="{ 'mb-6': hasError }"
           >
             Criar Lista

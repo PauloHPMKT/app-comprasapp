@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { Icon } from '@iconify/vue';
 import { useRouter } from 'vue-router';
 import Content from './Content.vue';
@@ -40,6 +40,16 @@ function toCategories() {
 function toggleProfileCard() {
   userProfileCard.value?.toggleCardVisibility();
 }
+
+onMounted(async () => {
+  loadingStore.startLoading();
+  try {
+    authStore.initializeStore();
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  } finally {
+    loadingStore.stopLoading();
+  }
+});
 </script>
 
 <template>
@@ -69,26 +79,77 @@ function toggleProfileCard() {
         <ProfileCard ref="userProfileCard" />
       </div>
     </div>
+    <div v-else>
+      <div
+        v-if="isLoading"
+        class="w-[160px] sm:w-[250px] h-14 sm:h-10 rounded-2xl animate-pulse flex items-center justify-center" style="animation-duration: 1.5s;">
+        <div class="w-full h-full bg-gray-200 rounded-lg"></div>
+      </div>
+      <MainButton
+        v-else
+        @click="router.push('/account')"
+        class="flex text-gray-500 bg-gray-200 w-[160px] sm:w-[250px] text-sm py-2 px-4 rounded-2xl cursor-pointer items-center"
+      >
+        <Icon
+          icon="fa7-regular:user"
+          width="20"
+          height="20"
+          class="mr-3 mb-4 sm:mb-0"
+        />
+        <span class="text-[14px]">Você está no modo visitante</span>
+      </MainButton>
+    </div>
   </header>
 
   <div class="min-h-[90dvh] flex flex-col">
-    <div class="w-full max-w-[1280px] mx-auto flex-1 flex flex-col">
+    <div
+      class="w-full flex-1 flex flex-col"
+      :class="!isLoggedIn ? 'max-w-[1100px] mx-auto' : 'max-w-[1280px] mx-auto'"
+    >
       <div class="sm:mx-6 mx-0 flex-1 flex flex-col">
         <div class="flex shadow-sm/5 bg-white flex-1 pr-4 overflow-hidden">
           <div
             v-if="isLoggedIn"
             class="w-60 border-r-2 border-gray-100 bg-gray-50 pr-4 hidden sm:block"
           >
-            <ul class="flex flex-col items-start justify-start p-4">
-              <li class="flex items-center justify-between mb-4">
-                <span class="text-gray-500">Minhas Listas</span>
-              </li>
-              <li @click="toCategories" class="flex items-center justify-between mb-4">
-                <span class="text-gray-500">Categorias</span>
-              </li>
-            </ul>
+            <nav class="py-4">
+              <ul class="flex flex-col gap-2">
+                <li
+                  @click="router.push('/app/lists')"
+                  class="flex items-center gap-3 px-3 py-2 cursor-pointer transition-colors bg-gray-900 rounded-sm text-amber-50"
+                  role="button"
+                  tabindex="0"
+                >
+                  <Icon
+                    icon="tabler:list"
+                    width="18"
+                    height="18"
+                  />
+                  <span>Minhas Listas</span>
+                </li>
+
+                <!-- <li
+                  @click="toCategories"
+                  :class="[
+                    'flex items-center gap-3 px-3 py-2 cursor-pointer transition-colors',
+                    router.currentRoute.path === '/app/categories'
+                      ? 'bg-white text-red-600 font-semibold shadow-sm rounded-md'
+                      : 'text-gray-600 hover:bg-white hover:shadow rounded-md'
+                  ]"
+                  role="button"
+                  tabindex="0"
+                >
+                  <Icon
+                    icon="tabler:category"
+                    width="18"
+                    height="18"
+                  />
+                  <span>Categorias</span>
+                </li> -->
+              </ul>
+            </nav>
           </div>
-          <main class="w-full my-4 pl-4 flex max-h-[85dvh]">
+          <main class="w-full pl-4 flex max-h-[85dvh]">
             <Content />
           </main>
         </div>
