@@ -1,17 +1,24 @@
 <script setup lang="ts">
 import { Icon } from '@iconify/vue';
+import { useRouter } from 'vue-router';
 import ModalLayout from './ModalLayout.vue';
 import MainButton from './MainButton.vue';
 
-import { useModal } from '../composables/useModal';
-
-const { close, isOpen } = useModal();
+const router = useRouter();
+const emit = defineEmits<{(e: 'close'): void}>();
 
 function closeCTALoginModal() {
-  alert(isOpen.value);
-  if (isOpen.value) {
-    close();
-  }
+  emit('close');
+}
+
+function goToRegistrationPage() {
+  router.push({ path: '/account', query: { action: 'register' } });
+  closeCTALoginModal();
+}
+
+function goToLoginPage() {
+  router.push({ path: '/account', query: { action: 'login' } });
+  closeCTALoginModal();
 }
 
 </script>
@@ -57,13 +64,13 @@ function closeCTALoginModal() {
         <div class="mt-2 w-full flex justify-center">
           <MainButton
             class="bg-red-500 text-white px-6 py-2 rounded-md"
-            @click="$emit('login')"
+            @click="goToRegistrationPage"
           >
             Criar minha conta
           </MainButton>
           <MainButton
             class="ml-4 bg-gray-200 text-gray-700 px-6 py-2 rounded-md"
-            @click="$emit('close')"
+            @click="goToLoginPage"
           >
             Entrar
           </MainButton>

@@ -7,9 +7,11 @@ import ProfileCard from '../components/ProfileCard.vue';
 import horizontalLogo from '../assets/img/comprasapp-horizontal-logo.png'
 import { useAuthStore } from '../store/auth';
 import { useLoadingStore } from '../store/loading';
+import { useAutomaticModalStore } from '../store/automaticModal';
 
 const authStore = useAuthStore();
 const loadingStore = useLoadingStore();
+const automaticModal = useAutomaticModalStore();
 const router = useRouter();
 
 const userProfileCard = ref<typeof ProfileCard | null>(null);
@@ -39,6 +41,10 @@ function toCategories() {
 
 function toggleProfileCard() {
   userProfileCard.value?.toggleCardVisibility();
+}
+
+function openCTALoginModal() {
+  automaticModal.open();
 }
 
 onMounted(async () => {
@@ -87,7 +93,7 @@ onMounted(async () => {
       </div>
       <MainButton
         v-else
-        @click="router.push('/account')"
+        @click="openCTALoginModal"
         class="flex text-gray-500 bg-gray-200 w-[160px] sm:w-[250px] text-sm py-2 px-4 rounded-2xl cursor-pointer items-center"
       >
         <Icon
