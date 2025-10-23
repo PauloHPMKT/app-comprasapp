@@ -5,31 +5,36 @@ import PageHeaderTitle from "../components/PageHeaderTitle.vue";
 import MainButton from "../components/MainButton.vue";
 import Overlay from "../components/Overlay.vue";
 import PurchaseItem from "../components/Item.vue";
-//import NewCategory from "../components/NewCategory.vue";
 import ModalLayout from "../components/ModalLayout.vue";
 import AddProductInput from "../components/AddProductInput.vue";
-import { useModal } from "../composables/useModal";
 import type { Item } from "types/item";
 import emptyListImage from "../assets/img/empty-list.png";
 import { useToast } from "../composables/useToast";
 
-const { isOpen, open, close } = useModal();
 const { addToast } = useToast();
 //const { purchaseItems, productItem, addPurchaseItemToList } = usePurchaseList();
 
-const observationText = ref("");
 const editingItemId = ref<number | null>(null);
 const removingItemId = ref<number | null>(null);
 const addProductInput = ref(false);
 const addObservation = ref(false);
-const disableObservationQuestion = ref(false);
 const isRemoveConfirmationOpen = ref(false);
 const purchaseItems = ref<Item.ToPurchase[]>([]);
 const currentProduct = ref<Item.ToPurchase | null>(null);
 const purchaseListTitle = ref(localStorage.getItem("purchase-list-title"));
 const addProductInputRef = ref<InstanceType<typeof AddProductInput>>();
+const addProductInputMobileRef = ref<InstanceType<typeof AddProductInput>>();
+// observation data
+const observationText = ref("");
+const observationQuestion = ref(false);
+const disableObservationQuestion = ref(false);
 
 //const showCreateNewCategoryModal = ref<typeof NewCategory | null>(null);
+function clearFormInput() {
+  addProductInput.value
+    ? addProductInputMobileRef.value?.clearForm()
+    : addProductInputRef.value?.clearForm();
+}
 
 const reversedPurchaseItems = computed(() => {
   return [...purchaseItems.value].reverse();
@@ -46,15 +51,14 @@ const itemToRemove = computed(() => {
   return item ? item.name : '';
 });
 
-function showObservationModal() {
-  open();
+function toggleObservationQuestionModal() {
+  observationQuestion.value = !observationQuestion.value;
 }
 
 function addProductInListOrObservation(product: Item.ToPurchase) {
   currentProduct.value = product;
   if (!localStorage.getItem('disable-observation-question')) {
-    toggleAddProductMobileInput();
-    showObservationModal();
+    toggleObservationQuestionModal();
     return;
   }
 
@@ -111,12 +115,12 @@ function includeProductInList() {
     }
   }
 
-  addProductInputRef.value?.clearForm();
+  clearFormInput();
   currentProduct.value = null;
   observationText.value = "";
 
-  if (isOpen.value) {
-    close();
+  if (observationQuestion.value) {
+    toggleObservationQuestionModal();
   }
 }
 
@@ -129,8 +133,8 @@ function savePurchaseList() {
 }
 
 function openObservationNotePad(OrderId?: number) {
-  if (isOpen.value) {
-    close();
+  if (observationQuestion.value) {
+    toggleObservationQuestionModal();
   }
 
   const itemToAddObservation = purchaseItems.value.some(item => item.orderId === OrderId);
@@ -180,11 +184,14 @@ function removeItem() {
         subtitle="Insira os dados dos produtos para preencera sua lista de compras."
         class="mb-0"
       />
-      <AddProductInput
-        ref="addProductInputRef"
-        @add-product="addProductInListOrObservation"
-        class="mt-4 hidden sm:flex"
-      />
+
+      <div class="hidden sm:block w-full mt-4">
+        <AddProductInput
+          ref="addProductInputRef"
+          @add-product="addProductInListOrObservation"
+        />
+      </div>
+
       <!-- Button for responsive mobile sm -->
       <div class="w-full sm:w-[80%] flex sm:hidden">
         <MainButton
@@ -259,7 +266,7 @@ function removeItem() {
       </div>
     </Overlay>
 
-    <Overlay v-if="isOpen">
+    <Overlay v-if="observationQuestion" class="absolute z-30">
       <div
         class="w-[90%] sm:w-[600px] min-h-[200px] bg-white rounded-sm p-4 shadow-2xl flex flex-col items-center justify-between gap-6"
       >
@@ -275,12 +282,12 @@ function removeItem() {
             <p class="text-gray-500 mb-4">
               Caso deseje, é possível incluir uma observação para este item como forma de lembrete ou informação adicional.
             </p>
-            <label for="observation" class="flex items-center">
+            <label for="observation" class="flex sm:items-center items-start">
               <input
                 type="checkbox"
                 id="observation"
                 v-model="disableObservationQuestion"
-                class="mr-2 w-4 h-4"
+                class="mt-1 sm:mt-0 mr-2 w-4 h-4"
                 />
               <p>
                 Não mostrar mais esta pergunta durante a criação dessa lista
@@ -303,7 +310,10 @@ function removeItem() {
     </Overlay>
 
     <!-- Modal for responsive layout -->
-    <Overlay v-if="addProductInput" class="sm:hidden">
+    <Overlay
+      v-if="addProductInput"
+      class="sm:hidden"
+    >
       <ModalLayout @close="toggleAddProductMobileInput">
         <template #body>
           <div class="flex flex-col w-full">
@@ -312,13 +322,11 @@ function removeItem() {
               Preencha os campos para adicionar um item a lista.
             </span>
 
-            <div class="w-full">
-              <AddProductInput
-                ref="addProductInputRef"
-                @add-product="addProductInListOrObservation"
-                class="mt-4"
-              />
-            </div>
+            <AddProductInput
+              v-if="addProductInput"
+              ref="addProductInputMobileRef"
+              @add-product="addProductInListOrObservation"
+            />
           </div>
         </template>
       </ModalLayout>
