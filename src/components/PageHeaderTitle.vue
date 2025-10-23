@@ -16,7 +16,7 @@ function backToDashboard() {
 </script>
 
 <template>
-  <div class="flex sm:pb-0 px-2 pt-4 gap-4 bg-gray-50">
+  <div class="flex px-2 py-4 sm:pb-0 gap-4 bg-gray-50">
     <Icon
       icon="material-symbols:arrow-back-ios-new-rounded"
       class="text-gray-800 font-extrabold cursor-pointer mt-2"
