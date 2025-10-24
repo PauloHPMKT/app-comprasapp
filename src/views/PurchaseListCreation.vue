@@ -8,7 +8,7 @@ import Overlay from "../components/Overlay.vue";
 import PurchaseItem from "../components/Item.vue";
 import ModalLayout from "../components/ModalLayout.vue";
 import AddProductInput from "../components/AddProductInput.vue";
-import type { Item } from "types/item";
+import type { Purchases } from "types/purchases";
 import emptyListImage from "../assets/img/empty-list.png";
 import { useToast } from "../composables/useToast";
 import { FormatPrice } from "../helpers/formatPrice";
@@ -22,9 +22,9 @@ const removingItemId = ref<number | null>(null);
 const addProductInput = ref(false);
 const addObservation = ref(false);
 const isRemoveConfirmationOpen = ref(false);
-const purchaseItems = ref<Item.ToPurchase[]>([]);
-const currentProduct = ref<Item.ToPurchase | null>(null);
-const purchaseListTitle = ref(localStorage.getItem("purchase-list-title"));
+const purchaseItems = ref<Purchases.Item[]>([]);
+const currentProduct = ref<Purchases.Item | null>(null);
+const purchaseListTitle = ref(localStorage.getItem("purchase-list-title")!);
 // observation data
 const observationText = ref("");
 const observationQuestion = ref(false);
@@ -62,7 +62,7 @@ function toggleObservationQuestionModal() {
   observationQuestion.value = !observationQuestion.value;
 }
 
-function addProductInListOrObservation(product: Item.ToPurchase) {
+function addProductInListOrObservation(product: Purchases.Item) {
   currentProduct.value = product;
   if (!localStorage.getItem('disable-observation-question')) {
     toggleObservationQuestionModal();
@@ -140,7 +140,28 @@ function savePurchaseList() {
     localStorage.removeItem("disable-observation-question");
     disableObservationQuestion.value = false;
   }
-  alert('A lista foi salva!!! deu bom!!! bora comprar mais!!!')
+
+  /**
+   * Antes de enviar para a página onde as listas de compras são exibidas
+   * é necessário definir a estrategia de armazenamento e recuperação das listas
+   * no modo não logado.
+   */
+
+  // aqui é provisório!!
+  const calculateTotalListPrices = purchaseItems.value.reduce((acc, item) => {
+    const itemPrice = Number(item.totalItemPrice) ?? 0;
+    return acc + itemPrice;
+  }, 0);
+
+  const purchaseListData: Purchases.List = {
+    title: purchaseListTitle.value,
+    items: purchaseItems.value,
+    totalItems: purchaseItems.value.length,
+    totalPrice: calculateTotalListPrices,
+    observation: '',
+  }
+  console.log(purchaseListData);
+  return router.push({ name: 'lists' });
 }
 
 function openObservationNotePad(OrderId?: number) {
@@ -238,9 +259,19 @@ function removeItem() {
       class="h-[14%] sm:h-[15%] flex items-center justify-between text-gray-500 border-t border-gray-300"
     >
       <div>
-        total de itens: <span class="font-extrabold text-gray-900">{{ purchaseItems.length }}</span>
-        <br />
-        total gasto: <span class="font-extrabold text-gray-900">{{ calculateTotalItemsPrice }}</span>
+        <h4 class="font-bold sm:text-[20px]">Resumo da Compra:</h4>
+        <div class="sm:flex items-center gap-3">
+          <p>total de itens na lista:
+            <span class="sm:text-[20px] font-extrabold text-gray-900">
+              {{ purchaseItems.length }}
+            </span>
+          </p>
+          <p>valor total da compra:
+            <span class="sm:text-[20px] font-extrabold text-gray-900">
+              {{ calculateTotalItemsPrice }}
+            </span>
+          </p>
+        </div>
       </div>
       <MainButton class="bg-gray-900 text-white w-fit h-11" @click="savePurchaseList">
         Finalizar Lista

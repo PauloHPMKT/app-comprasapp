@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { Icon } from '@iconify/vue';
-import type { Item } from 'types/item';
+import type { Purchases } from 'types/purchases';
 import { useAuthStore } from '../store/auth';
 import { FormatPrice } from '../helpers/formatPrice';
 
@@ -10,7 +10,7 @@ type EmitEvents = {
   (e: 'edit-item'): void;
   (e: 'add-observation', id: number): void;
 };
-type ItemProps = Item.ToPurchase;
+type ItemProps = Purchases.Item;
 
 const emit = defineEmits<EmitEvents>();
 const props = defineProps<ItemProps>()

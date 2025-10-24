@@ -3,7 +3,7 @@ import { computed, reactive, ref, watch } from 'vue';
 import { Icon } from '@iconify/vue';
 import Input from './Input.vue';
 import MainButton from './MainButton.vue';
-import type { Item } from '../types/item';
+import type { Purchases } from '../types/purchases';
 import { useAuthStore } from '../store/auth';
 import { useValidation } from '../composables/useValidation';
 import { useToast } from '../composables/useToast';
@@ -14,12 +14,12 @@ const { formsValidation, hasError, errorMessage } = useValidation();
 const { addToast } = useToast();
 
 interface Emits {
-  (e: 'add-product', product: Item.ToPurchase): void;
+  (e: 'add-product', product: Purchases.Item): void;
 }
 
 const emit = defineEmits<Emits>();
 
-const product = reactive<Item.ToPurchase>({
+const product = reactive<Purchases.Item>({
   name: '',
   category: {
     name: '',
@@ -127,8 +127,8 @@ function handleQuantityInput(value: string | number) {
 }
 
 function handlePriceInput(value: string | number) {
-  product.price = value === '' ? 0 : Number(value);
-  if (product.price > 0) fieldErrors.price = false;
+  product.price = value === '' ? 0 : value;
+  if (value !== '' && value !== 0) fieldErrors.price = false;
 }
 
 defineExpose({
