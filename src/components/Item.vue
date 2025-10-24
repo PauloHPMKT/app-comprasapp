@@ -3,6 +3,7 @@ import { computed, ref } from 'vue';
 import { Icon } from '@iconify/vue';
 import type { Item } from 'types/item';
 import { useAuthStore } from '../store/auth';
+import { FormatPrice } from '../helpers/formatPrice';
 
 type EmitEvents = {
   (e: 'delete-item', id: number): void;
@@ -19,6 +20,12 @@ const isMenuOpen = ref(false);
 
 const isLoggedIn = computed(() => {
   return authStore.isAuthenticated;
+});
+
+const formattedPrice = computed(() => {
+  return (price: string | number): string => {
+    return FormatPrice.toBRL(price);
+  };
 });
 
 function showObservation() {
@@ -95,7 +102,7 @@ function addObservation(id: number) {
                 'text-[16px] sm:text-[18px]': !isMenuOpen
               }"
             >
-              {{ Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(price)) }}
+              {{ formattedPrice(props.price) }}
             </p>
             <p
               v-if="quantity && Number(quantity) > 1"
@@ -105,7 +112,7 @@ function addObservation(id: number) {
                 'text-[14px] sm:text-[16px]': !isMenuOpen
               }"
             >
-              {{ Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(totalItemPrice) ?? 0) }}
+              {{ formattedPrice(props.totalItemPrice ?? 0) }}
             </p>
             <div
               v-if="observation"

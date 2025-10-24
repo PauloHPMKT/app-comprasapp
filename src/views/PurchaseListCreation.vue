@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
+import { useRouter } from "vue-router";
 import { Icon } from "@iconify/vue";
 import PageHeaderTitle from "../components/PageHeaderTitle.vue";
 import MainButton from "../components/MainButton.vue";
@@ -10,8 +11,10 @@ import AddProductInput from "../components/AddProductInput.vue";
 import type { Item } from "types/item";
 import emptyListImage from "../assets/img/empty-list.png";
 import { useToast } from "../composables/useToast";
+import { FormatPrice } from "../helpers/formatPrice";
 
 const { addToast } = useToast();
+const router = useRouter();
 //const { purchaseItems, productItem, addPurchaseItemToList } = usePurchaseList();
 
 const editingItemId = ref<number | null>(null);
@@ -22,12 +25,13 @@ const isRemoveConfirmationOpen = ref(false);
 const purchaseItems = ref<Item.ToPurchase[]>([]);
 const currentProduct = ref<Item.ToPurchase | null>(null);
 const purchaseListTitle = ref(localStorage.getItem("purchase-list-title"));
-const addProductInputRef = ref<InstanceType<typeof AddProductInput>>();
-const addProductInputMobileRef = ref<InstanceType<typeof AddProductInput>>();
 // observation data
 const observationText = ref("");
 const observationQuestion = ref(false);
 const disableObservationQuestion = ref(false);
+// refs instances
+const addProductInputRef = ref<InstanceType<typeof AddProductInput>>();
+const addProductInputMobileRef = ref<InstanceType<typeof AddProductInput>>();
 
 //const showCreateNewCategoryModal = ref<typeof NewCategory | null>(null);
 function clearFormInput() {
@@ -40,10 +44,13 @@ const reversedPurchaseItems = computed(() => {
   return [...purchaseItems.value].reverse();
 });
 
-const calculateTotalItemsPrice = computed(() => {
-  return purchaseItems.value.reduce((acc, item) => {
-    return acc + Number(item.totalItemPrice);
-  }, 0).toFixed(2);
+const calculateTotalItemsPrice = computed((): string => {
+  const total = purchaseItems.value.reduce((acc, item) => {
+    const itemPrice = Number(item.totalItemPrice) ?? 0;
+    return acc + itemPrice;
+  }, 0);
+
+  return FormatPrice.toBRL(total);
 });
 
 const itemToRemove = computed(() => {
@@ -92,6 +99,9 @@ function includeProductInList() {
   }
 
   if (currentProduct.value) {
+    const price = Number(String(currentProduct.value.price).replace(',', '.')) || 0;
+    const quantity = Number(currentProduct.value?.quantity) || 0;
+
     const productToAdd = {
       ...currentProduct.value,
       orderId: purchaseItems.value.length + 1,
@@ -101,7 +111,8 @@ function includeProductInList() {
         emoji: currentProduct.value?.category?.emoji || ''
       },
       observation: currentProduct.value?.observation || '',
-      totalItemPrice: (Number(currentProduct.value?.quantity) * Number(currentProduct.value?.price)).toFixed(2),
+      price,
+      totalItemPrice: (quantity * price).toFixed(2),
     };
     purchaseItems.value.push(productToAdd);
 
@@ -229,7 +240,7 @@ function removeItem() {
       <div>
         total de itens: <span class="font-extrabold text-gray-900">{{ purchaseItems.length }}</span>
         <br />
-        total gasto: <span class="font-extrabold text-gray-900">R$ {{ calculateTotalItemsPrice }}</span>
+        total gasto: <span class="font-extrabold text-gray-900">{{ calculateTotalItemsPrice }}</span>
       </div>
       <MainButton class="bg-gray-900 text-white w-fit h-11" @click="savePurchaseList">
         Finalizar Lista
