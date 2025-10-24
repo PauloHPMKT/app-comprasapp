@@ -114,6 +114,16 @@ function handleNameInput(value: string) {
 function handleQuantityInput(value: string | number) {
   product.quantity = value === '' ? 0 : Number(value);
   if (product.quantity > 0) fieldErrors.quantity = false;
+  if (isNaN(product.quantity)) {
+    addToast({
+      id: Date.now().toString(),
+      message: 'Formato de quantidade inválido.',
+      type: 'error',
+      duration: 3000,
+    });
+    fieldErrors.quantity = true;
+    product.quantity = 0;
+  }
 }
 
 function handlePriceInput(value: string | number) {
@@ -138,7 +148,7 @@ defineExpose({
       />
     </div>
 
-    <div class="flex flex-col sm:flex-row gap-1 sm:w-[45%] w-full">
+    <div class="flex flex-col sm:flex-row gap-2 sm:w-[45%] w-full">
       <Input
         :model-value="displayQuantity"
         @update:model-value="handleQuantityInput"
