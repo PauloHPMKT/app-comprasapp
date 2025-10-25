@@ -1,63 +1,71 @@
 <script setup lang="ts">
-import { onMounted, provide, ref } from "vue";
-import { Icon } from "@iconify/vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import MainButton from "../components/MainButton.vue";
 import Overlay from "../components/Overlay.vue";
 import CreateListTitleModal from "../components/CreateListTitleModal.vue";
 import { useLoadingStore } from "../store/loading";
-import { useModal } from "../composables/useModal";
-import { useValidation } from "../composables/useValidation";
 import emptyMarket from "../assets/img/img-casas.png";
+import PageHeaderTitle from "../components/PageHeaderTitle.vue";
+import { useCreateListTitleModalStore } from "../store/createListTitleModal";
+import type { Purchases } from "../types/purchases";
+import { useAuthStore } from "../store/auth";
+import DefineBudgetModal from "../components/DefineBudgetModal.vue";
 
-const purchaseListTitle = ref("");
-const purchaseLists = ref([
-  {
-    id: 1,
-    name: "Compras do mês",
-    value: 1000,
-    date: "2025-01-01",
-  },
-  {
-    id: 2,
-    name: "Compras do ano",
-    value: 12000,
-    date: "2025-01-01",
-  },
-]);
-
+const authStore = useAuthStore();
 const loadingStore = useLoadingStore();
+const createListTitleModal = useCreateListTitleModalStore();
 const router = useRouter();
-const { isOpen, open, close } = useModal();
-const { useFieldValidation } = useValidation();
-const {
-  validateField,
-  hasError,
-  errorMessage,
-  clearError
-} = useFieldValidation(purchaseListTitle);
 
-provide('modalActions', { open, close, resetModal });
+const purchaseLists = reactive<Purchases.List[]>([]);
+const isBudgetModalOpen = ref(false);
+const budgetValue = ref<string>('');
+
+const isLoggedIn = computed(() => authStore.isAuthenticated);
+
+watch(() => localStorage.getItem('monthly-budget'), (newValue) => {
+  if (newValue) {
+    budgetValue.value = newValue;
+  }
+}, { immediate: true });
 
 function navigateToCreatePurchaseListView() {
-  const isValid = validateField();
-  if (!isValid) return;
+  // Validação simples
+  if (!createListTitleModal.listTitle.trim()) {
+    createListTitleModal.setError("O nome da lista é obrigatório");
+    return;
+  }
 
-  localStorage.setItem("purchase-list-title", purchaseListTitle.value);
+  localStorage.setItem("purchase-list-title", createListTitleModal.listTitle);
   router.push({ name: "create-list" });
-  close();
+  createListTitleModal.resetModal();
 }
 
-function resetModal() {
-  clearError();
-  purchaseListTitle.value = "";
-  close();
+function openBudgetModal() {
+  isBudgetModalOpen.value = true;
+}
+
+function closeBudgetModal() {
+  isBudgetModalOpen.value = false;
+}
+
+function handleBudgetSubmit(value: string) {
+  console.log('Budget submitted:', value);
+
+  localStorage.setItem('monthly-budget', value);
+  budgetValue.value = value;
+  closeBudgetModal();
 }
 
 onMounted(async () => {
   loadingStore.startLoading();
+  if (localStorage.getItem("purchase-list-data")) {
+    const list = JSON.parse(localStorage.getItem("purchase-list-data")!);
+    purchaseLists.push(...list); //aqui existe um problema
+  }
+
   try {
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 1500));
   } finally {
     loadingStore.stopLoading();
   }
@@ -65,189 +73,328 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="h-full w-full">
+  <div class="h-full w-full overflow-y-auto">
     <div
       v-if="purchaseLists.length"
       class="flex justify-center items-center h-full w-full"
     >
       <div class="flex flex-col gap-3 items-center justify-center rounded-lg">
-        <div v-if="loadingStore.isLoading" class="w-52 h-26 rounded-lg animate-pulse flex items-center justify-center" style="animation-duration: 1.5s;">
-          <div class="w-full h-full bg-gray-200 rounded-lg"></div>
-        </div>
-        <img v-else :src="emptyMarket" alt="Mercados vazios" class="w-48 rounded-lg" />
-        <div>
-          <div
-            v-if="loadingStore.isLoading"
-            class="w-68 h-8 rounded-lg animate-pulse flex items-center justify-center" style="animation-duration: 1.5s;"
-          >
-            <div class="w-full h-full bg-gray-200 rounded-lg"></div>
-          </div>
-          <p v-else class="text-gray-500 py-4">Você ainda não possui listas criadas</p>
-        </div>
         <div
           v-if="loadingStore.isLoading"
-          class="w-36 h-12 rounded-lg animate-pulse flex items-center justify-center" style="animation-duration: 1.5s;"
+          class="w-52 h-26 rounded-lg animate-pulse flex items-center justify-center"
+          style="animation-duration: 1.5s"
         >
           <div class="w-full h-full bg-gray-200 rounded-lg"></div>
         </div>
-        <MainButton v-else @click="open" class="bg-red-500 h-11 rounded-md">
+        <img
+          v-else
+          :src="emptyMarket"
+          alt="Mercados vazios"
+          class="w-48 rounded-lg"
+        />
+        <div>
+          <div
+            v-if="loadingStore.isLoading"
+            class="w-68 h-8 rounded-lg animate-pulse flex items-center justify-center"
+            style="animation-duration: 1.5s"
+          >
+            <div class="w-full h-full bg-gray-200 rounded-lg"></div>
+          </div>
+          <p v-else class="text-gray-500 py-4">
+            Você ainda não possui listas criadas
+          </p>
+        </div>
+        <div
+          v-if="loadingStore.isLoading"
+          class="w-36 h-12 rounded-lg animate-pulse flex items-center justify-center"
+          style="animation-duration: 1.5s"
+        >
+          <div class="w-full h-full bg-gray-200 rounded-lg"></div>
+        </div>
+        <MainButton
+          v-else
+          @click="createListTitleModal.openListTitleModal"
+          class="bg-gray-800 h-11 rounded-md"
+        >
           Ir às compras
         </MainButton>
       </div>
     </div>
-    <div v-else class="h-[77vh]">
-      <div class="mb-8">
-        <h2 class="text-3xl font-bold">Dashboard</h2>
-      </div>
-      <div class="flex h-full">
-        <div class="w-1/2">
-          <div class="flex w-full mb-4">
-            <!-- Criar componente de input para englobar o icone de pesquisa -->
-            <input
-              type="text"
-              placeholder="Nome do item"
-              class="border border-gray-300 rounded-lg px-2 h-12 w-full"
-            />
-            <MainButton
-              class="bg-red-600 flex items-center justify-center rounded-lg w-fit"
-            >
-              <Icon
-                icon="material-symbols:search-rounded"
-                width="28"
-                height="28"
-                class="text-bold text-white"
-              />
-            </MainButton>
-          </div>
-          <div
-            class="bg-[#e2e2e2] rounded-lg gap-4 h-36 overflow-hidden relative"
+    <div v-else>
+      <PageHeaderTitle
+        title="Visão Geral"
+        subtitle="Acompanhe sua movimentação de compras e gerencie sua carteira"
+      />
+      <div class="h-full w-full bg-gray-50 px-2">
+        <div class="pt-1">
+          <MainButton
+            @click="createListTitleModal.openListTitleModal"
+            class="bg-gray-800 h-10 rounded-md hidden sm:flex"
           >
-            <div class="flex justify-between px-4 py-3 h-full">
-              <div class="w-[90%] flex flex-col pt-2">
-                <p class="font-semibold">
-                  Valor total de compras no ano de 2025
-                </p>
-                <span class="font-bold text-[25px] pb-3">R$ 1.000,00</span>
-                <p class="text-gray-500">
-                  Utilize os valores aqui gerados para ajudar a medir seu
-                  orçamento
-                </p>
-              </div>
-              <div class="w-[10%]">
-                <!-- <img :src="greenCart" alt="Carrinho Verde" class="w-14" /> -->
+            Criar nova lista de compras +
+          </MainButton>
+
+          <div v-if="isLoggedIn"><!-- Tratar esse trecho corretamente ao final da feature -->
+            <div class="sm:flex sm:justify-between sm:items-center sm:mt-6 mb-4">
+              <h2 class="text-2xl font-semibold text-gray-800 mb-4">
+                Gerenciamento da carteira
+              </h2>
+              <div class="flex gap-2 overflow-x-auto sm:w-1/2 p-2 rounded-lg snap-x snap-mandatory scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400">
+                <div class="snap-start flex-shrink-0 text-gray-500 text-sm bg-gray-200 px-3 py-1 rounded-full w-fit whitespace-nowrap">
+                  Julho de 2025
+                </div>
+                <div class="snap-start flex-shrink-0 text-gray-500 text-sm bg-gray-200 px-3 py-1 rounded-full w-fit whitespace-nowrap">
+                  Exportar resumo
+                </div>
+                <div class="snap-start flex-shrink-0 text-gray-500 text-sm bg-gray-200 px-3 py-1 rounded-full w-fit whitespace-nowrap">
+                  Filtrar por período
+                </div>
               </div>
             </div>
-            <div class="w-full bg-green-600 h-2 absolute bottom-0"></div>
+            <div class="flex overflow-x-auto gap-3 mb-10 pb-4 snap-x snap-mandatory scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+              <!-- Card 1: Orçamento Mensal (Foco Visual Principal) -->
+              <div
+                class="min-w-[320px] sm:min-w-[400px] snap-start bg-white soft-shadow rounded-md overflow-hidden"
+              >
+                <div class="bg-blue-600 h-2"></div>
+                <div
+                  v-if="!budgetValue"
+                  class="flex flex-col items-center justify-center mt-4"
+                >
+                  <img src="../assets/img/10060033.png" alt="" class="w-16 h-16"/>
+                  <div class="w-full">
+                    <p class="text-center p-2 font-semibold">
+                      Você ainda não definiu um orçamento mensal
+                    </p>
+                  <MainButton
+                    @click="openBudgetModal"
+                    class="mx-auto mb-6 px-4 py-2 text-sm font-semibold bg-gray-800 text-white rounded-md hover:bg-gray-700 transition duration-150"
+                  >
+                    Adicionar Orçamento Mensal
+                  </MainButton>
+                  </div>
+                </div>
+                <div v-else class="p-6">
+                  <div class="flex items-center space-x-4">
+                    <div class="sm:text-left sm:mt-0">
+                      <p class="text-sm font-medium text-gray-500">
+                        Orçamento Mensal Utilizado
+                      </p>
+                      <p class="text-3xl font-extrabold text-gray-900 mt-1">
+                        R$ {{ budgetValue }}
+                      </p>
+                      <span class="text-sm text-gray-400">
+                        R$ 300,00 Restante (Total: R$ 1000)
+                      </span>
+                    </div>
+                  </div>
+                  <MainButton
+                    class="mt-2 sm:mt-4 px-4 py-2 text-sm font-semibold bg-gray-800 text-white rounded-md hover:bg-gray-700 transition duration-150"
+                  >
+                    Ajustar Orçamento
+                  </MainButton>
+                </div>
+              </div>
+
+              <!-- Total de listas criadas -->
+              <div class="min-w-[280px] snap-start bg-white soft-shadow rounded-md overflow-hidden">
+                <div class="bg-yellow-500 h-2"></div>
+                <div class="p-6">
+                  <p class="text-sm font-medium text-gray-500">listas criadas no mês</p>
+                  <p class="text-4xl font-bold text-gray-900 mt-1">5</p>
+                  <div class="flex items-center mt-2">
+                    <p class="text-sm text-gray-500">
+                      Somatório de listas criadas <br/>(Entre ativas e concluídas)<br/>
+                      <span class="text-lg font-semibold text-green-600 bg-gray-50 px-2 py-0.5 rounded-full w-fit">
+                        R$ 319,00
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Card 2: Economia no Mês -->
+              <div class="min-w-[280px] snap-start bg-white soft-shadow rounded-md overflow-hidden">
+                <div class="bg-green-500 h-2"></div>
+                <div class="p-6">
+                  <p class="text-sm font-medium text-gray-500">Economia em Julho</p>
+                  <p class="text-4xl font-bold text-gray-900 mt-1">R$ 85,50</p>
+                  <div class="flex items-center mt-2">
+                    <span
+                      class="text-xs font-medium text-green-600 bg-green-100 px-2 py-0.5 rounded-full"
+                      >3.2%</span
+                    >
+                    <span class="text-sm text-gray-400 ml-2"
+                      >Menor que o mês anterior</span
+                    >
+                  </div>
+                </div>
+              </div>
+
+              <!-- Card 3: Preço Médio por Item -->
+              <div class="min-w-[280px] snap-start bg-white soft-shadow overflow-hidden rounded-md">
+                <div class="bg-red-500 h-2"></div>
+                <div class="p-6">
+                  <p class="text-sm font-medium text-gray-500">
+                    Preço Médio por Item
+                  </p>
+                  <p class="text-4xl font-bold text-gray-900 mt-1">R$ 15,20</p>
+                  <span class="text-sm text-gray-400">Média em listas ativas</span>
+                </div>
+              </div>
+            </div>
           </div>
-          <div
-            class="border-t-2 border-gray-200 mt-4 py-3 h-[60%] overflow-hidden"
-          >
-            <ul class="overflow-auto h-full flex flex-col gap-2">
-              <li class="bg-gray-50 flex flex-col px-4 py-3 rounded-lg gap-2">
-                <div class="flex gap-4 mb-4 justify-start">
-                  <Icon
-                    icon="mingcute:check-fill"
-                    width="24"
-                    height="24"
-                    class="text-green-600 bg-white rounded-full"
-                  />
-                  <div>
-                    <h3 class="font-bold">Listas de compras do mês de abril</h3>
-                    <p>Teste</p>
-                  </div>
-                </div>
-                <div class="flex justify-between">
-                  <div class="flex gap-4">
-                    <Icon
-                      icon="mdi:marketplace"
-                      width="24"
-                      height="24"
-                      class="text-red-500"
-                    />
-                    <span class="text-gray-500"
-                      >Items mais comprados no mês...</span
+
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Coluna 1: Lista de Compras Prioritárias (Main Content) -->
+            <div class="lg:col-span-2">
+              <h2 class="text-2xl font-semibold text-gray-800 mb-4">
+                Listas Ativas e em Andamento
+              </h2>
+              <div id="list-container" class="space-y-5">
+                <!-- Exemplo de Card de Lista (com detalhe financeiro) -->
+                <div
+                  @click="console.log('Abrir Lista 1')"
+                  class="list-card soft-shadow cursor-pointer bg-white p-5 rounded-md"
+                >
+                  <div class="flex justify-between items-start mb-2">
+                    <h3
+                      class="text-xl font-extrabold text-gray-900 flex items-center"
                     >
+                      Compras Atacarejo O Irmão
+                      <span class="ml-3 text-xs font-semibold text-white bg-green-500 px-2 py-0.5 rounded-full">
+                        Compartilhada
+                      </span>
+                    </h3>
                   </div>
-                  <div class="flex gap-2">
-                    <span class="text-gray-800 font-bold">R$ 1.000,00</span>
+
+                  <!-- Progresso da Compra -->
+                  <p class="text-sm text-gray-600 mb-2">
+                    24/30 Itens (80%) Concluídos
+                  </p>
+                  <div class="w-full bg-gray-200 rounded-full h-2.5">
+                    <div
+                      class="bg-indigo-600 h-2.5 rounded-full"
+                      style="width: 80%"
+                    ></div>
                   </div>
-                </div>
-              </li>
-              <li class="bg-gray-50 flex flex-col px-4 py-3 rounded-lg gap-2">
-                <div class="flex gap-4 mb-4 justify-start">
-                  <Icon
-                    icon="mingcute:check-fill"
-                    width="24"
-                    height="24"
-                    class="text-green-600 bg-white rounded-full"
-                  />
-                  <div>
-                    <h3 class="font-bold">Listas de compras do mês de abril</h3>
-                    <p>Teste</p>
-                  </div>
-                </div>
-                <div class="flex justify-between">
-                  <div class="flex gap-4">
-                    <Icon
-                      icon="mdi:marketplace"
-                      width="24"
-                      height="24"
-                      class="text-red-500"
-                    />
-                    <span class="text-gray-500"
-                      >Items mais comprados no mês...</span
-                    >
-                  </div>
-                  <div class="flex gap-2">
-                    <span class="text-gray-800 font-bold">R$ 1.000,00</span>
-                  </div>
-                </div>
-              </li>
-              <li class="bg-gray-50 flex flex-col px-4 py-3 rounded-lg gap-2">
-                <div class="flex gap-4 mb-4 justify-start">
-                  <Icon
-                    icon="mingcute:check-fill"
-                    width="24"
-                    height="24"
-                    class="text-green-600 bg-white rounded-full"
-                  />
-                  <div>
-                    <h3 class="font-bold">Listas de compras do mês de abril</h3>
-                    <p>Teste</p>
+
+                  <!-- Detalhes Financeiros -->
+                  <div
+                    class="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-gray-100"
+                  >
+                    <div>
+                      <p class="text-xs font-medium text-gray-500">Valor da lista</p>
+                      <p class="text-lg font-bold text-gray-900">R$ 385,00</p>
+                    </div>
+                    <div>
+                      <p class="text-xs font-medium text-gray-500">
+                        Gasto Real (até agora)
+                      </p>
+                      <p class="text-lg font-bold text-red-600">R$ 410,50</p>
+                      <span class="text-xs text-red-500 font-medium"
+                        >+ R$ 25,50 acima do valor original</span
+                      >
+                    </div>
                   </div>
                 </div>
-                <div class="flex justify-between">
-                  <div class="flex gap-4">
-                    <Icon
-                      icon="mdi:marketplace"
-                      width="24"
-                      height="24"
-                      class="text-red-500"
-                    />
-                    <span class="text-gray-500"
-                      >Items mais comprados no mês...</span
-                    >
+
+                <!-- Exemplo de Lista 2 (Dentro do Orçamento) -->
+                <div
+                  onclick="console.log('Abrir Lista 2')"
+                  class="list-card soft-shadow cursor-pointer bg-white p-5 rounded-md"
+                >
+                  <div class="flex justify-between items-start mb-2">
+                    <h3 class="text-xl font-extrabold text-gray-900">
+                      Compras da Farmácia
+                    </h3>
                   </div>
-                  <div class="flex gap-2">
-                    <span class="text-gray-800 font-bold">R$ 1.000,00</span>
+
+                  <p class="text-sm text-gray-600 mb-2">
+                    10/10 Itens (100%) Concluídos
+                  </p>
+                  <div class="w-full bg-gray-200 rounded-full h-2.5">
+                    <div
+                      class="bg-green-600 h-2.5 rounded-full"
+                      style="width: 100%"
+                    ></div>
+                  </div>
+
+                  <!-- Detalhes Financeiros -->
+                  <div
+                    class="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-gray-100"
+                  >
+                    <div>
+                      <p class="text-xs font-medium text-gray-500">Estimado</p>
+                      <p class="text-lg font-bold text-gray-900">R$ 120,00</p>
+                    </div>
+                    <div>
+                      <p class="text-xs font-medium text-gray-500">
+                        Gasto Real
+                      </p>
+                      <p class="text-lg font-bold text-green-600">R$ 115,00</p>
+                      <span class="text-xs text-green-500 font-medium"
+                        >R$ 5,00 Economizados!</span
+                      >
+                    </div>
                   </div>
                 </div>
-              </li>
-            </ul>
+
+                <!-- Placeholder caso não haja listas -->
+                <div
+                  id="no-lists-message"
+                  class="hidden text-center py-10 bg-white soft-shadow rounded-xl"
+                >
+                  <p class="text-lg text-gray-600">
+                    Você não tem listas ativas. Comece uma agora!
+                  </p>
+                </div>
+
+                <a
+                  href="#"
+                  class="block text-center mt-6 text-gray-700 font-semibold hover:text-gray-500 transition duration-150"
+                >
+                  Ver histórico e listas concluídas &rarr;
+                </a>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="w-1/2">folder 2</div>
       </div>
     </div>
 
-    <Overlay v-if="isOpen">
+    <Overlay v-if="createListTitleModal.isModalOpen">
       <CreateListTitleModal
-        :purchase-list-title="purchaseListTitle"
-        :hasError="hasError"
-        :errorMessage="errorMessage"
-        @update:purchase-list-title="purchaseListTitle = $event"
-        @navigate-to-create-purchase-list-view="navigateToCreatePurchaseListView"
+        :purchase-list-title="createListTitleModal.listTitle"
+        :hasError="createListTitleModal.hasError"
+        :errorMessage="createListTitleModal.errorMessage"
+        @update:purchase-list-title="createListTitleModal.setListTitle($event)"
+        @navigate-to-create-purchase-list-view="
+          navigateToCreatePurchaseListView
+        "
+        class="fixed z-400"
       />
     </Overlay>
+
+    <Overlay v-if="isBudgetModalOpen">
+      <DefineBudgetModal
+        @submit-budget-value="handleBudgetSubmit"
+        @close="closeBudgetModal"
+      />
+    </Overlay>
+
+    <!-- <div
+      v-if="isModalOtherOptionsOpened"
+      class="w-fit bg-white p-6 rounded-dm shadow fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-500"
+    >
+      <ul class="flex flex-col gap-4">
+        <li>
+          Resumo Financeiro
+        </li>
+        <li>
+          Filtrar por período
+        </li>
+      </ul>
+    </div> -->
   </div>
 </template>
