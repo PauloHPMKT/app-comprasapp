@@ -140,46 +140,17 @@ onMounted(async () => {
         <div class="flex shadow-sm/5 bg-white flex-1 pr-4 overflow-hidden">
           <div
             v-if="isLoggedIn"
-            class="w-60 border-r-2 border-gray-100 bg-gray-50 pr-4 hidden sm:block"
+            class="w-60 border-r-2 border-gray-100 bg-gray-50 hidden sm:block"
           >
-            <nav class="py-4">
-              <ul class="flex flex-col gap-2">
-                <li
-                  @click="router.push('/app/lists')"
-                  class="flex items-center gap-3 px-3 py-2 cursor-pointer transition-colors bg-gray-900 rounded-sm text-amber-50"
-                  role="button"
-                  tabindex="0"
-                >
-                  <Icon
-                    icon="tabler:list"
-                    width="18"
-                    height="18"
-                  />
-                  <span>Minhas Listas</span>
-                </li>
-
-                <!-- <li
-                  @click="toCategories"
-                  :class="[
-                    'flex items-center gap-3 px-3 py-2 cursor-pointer transition-colors',
-                    router.currentRoute.path === '/app/categories'
-                      ? 'bg-white text-red-600 font-semibold shadow-sm rounded-md'
-                      : 'text-gray-600 hover:bg-white hover:shadow rounded-md'
-                  ]"
-                  role="button"
-                  tabindex="0"
-                >
-                  <Icon
-                    icon="tabler:category"
-                    width="18"
-                    height="18"
-                  />
-                  <span>Categorias</span>
-                </li> -->
-              </ul>
+            <nav class="w-full bg-white h-full">
+              <NavigationMenu
+                ref="navigationMenu"
+                :is-open="true"
+                @create-new-list="handleCreateNewList"
+              />
             </nav>
           </div>
-          <main class="w-full pl-4 flex max-h-[85dvh]">
+          <main class="w-full pl-4 flex max-h-[calc(100vh-120px)] overflow-hidden">
             <Content />
           </main>
         </div>
@@ -192,6 +163,7 @@ onMounted(async () => {
           :is-open="showMobileMenu"
           @close="closeNavigationMenuMobile"
           @create-new-list="handleCreateNewList"
+          class="fixed bottom-0 right-0 z-50 shadow-lg w-64 h-full"
         />
       </Overlay>
       <div
