@@ -1,21 +1,24 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, watch } from "vue";
-import { useRouter } from "vue-router";
-import MainButton from "../components/MainButton.vue";
+import {
+  ref,
+  watch,
+  reactive,
+  computed,
+  onMounted,
+} from "vue";
 import Overlay from "../components/Overlay.vue";
-import CreateListTitleModal from "../components/CreateListTitleModal.vue";
-import { useLoadingStore } from "../store/loading";
-import emptyMarket from "../assets/img/img-casas.png";
+import MainButton from "../components/MainButton.vue";
 import PageHeaderTitle from "../components/PageHeaderTitle.vue";
-import { useCreateListTitleModalStore } from "../store/createListTitleModal";
+import DefineBudgetModal from "../components/DefineBudgetModal.vue";
 import type { Purchases } from "../types/purchases";
 import { useAuthStore } from "../store/auth";
-import DefineBudgetModal from "../components/DefineBudgetModal.vue";
+import { useLoadingStore } from "../store/loading";
+import { useCreateListTitleModalStore } from "../store/createListTitleModal";
+import emptyMarket from "../assets/img/img-casas.png";
 
 const authStore = useAuthStore();
 const loadingStore = useLoadingStore();
 const createListTitleModal = useCreateListTitleModalStore();
-const router = useRouter();
 
 const purchaseLists = reactive<Purchases.List[]>([]);
 const isBudgetModalOpen = ref(false);
@@ -29,18 +32,6 @@ watch(() => localStorage.getItem('monthly-budget'), (newValue) => {
   }
 }, { immediate: true });
 
-function navigateToCreatePurchaseListView() {
-  // Validação simples
-  if (!createListTitleModal.listTitle.trim()) {
-    createListTitleModal.setError("O nome da lista é obrigatório");
-    return;
-  }
-
-  localStorage.setItem("purchase-list-title", createListTitleModal.listTitle);
-  router.push({ name: "create-list" });
-  createListTitleModal.resetModal();
-}
-
 function openBudgetModal() {
   isBudgetModalOpen.value = true;
 }
@@ -49,9 +40,8 @@ function closeBudgetModal() {
   isBudgetModalOpen.value = false;
 }
 
+// função provisória
 function handleBudgetSubmit(value: string) {
-  console.log('Budget submitted:', value);
-
   localStorage.setItem('monthly-budget', value);
   budgetValue.value = value;
   closeBudgetModal();
@@ -125,7 +115,7 @@ onMounted(async () => {
         title="Visão Geral"
         subtitle="Acompanhe sua movimentação de compras e gerencie sua carteira"
       />
-      <div class="h-full w-full bg-gray-50 px-2">
+      <div class="h-full w-full bg-gray-50 px-2 sm:px-4">
         <div class="pt-1">
           <MainButton
             @click="createListTitleModal.openListTitleModal"
@@ -134,12 +124,15 @@ onMounted(async () => {
             Criar nova lista de compras +
           </MainButton>
 
-          <div v-if="isLoggedIn"><!-- Tratar esse trecho corretamente ao final da feature -->
+          <div v-if="isLoggedIn">
             <div class="sm:flex sm:justify-between sm:items-center sm:mt-6 mb-4">
-              <h2 class="text-2xl font-semibold text-gray-800 mb-4">
+              <h2 class="text-2xl font-semibold text-gray-800">
                 Gerenciamento da carteira
               </h2>
-              <div class="flex gap-2 overflow-x-auto sm:w-1/2 p-2 rounded-lg snap-x snap-mandatory scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400">
+              <div
+                v-if="isLoggedIn"
+                class="flex gap-2 overflow-x-auto sm:w-1/2 p-2 rounded-lg snap-x snap-mandatory scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400"
+              >
                 <div class="snap-start flex-shrink-0 text-gray-500 text-sm bg-gray-200 px-3 py-1 rounded-full w-fit whitespace-nowrap">
                   Julho de 2025
                 </div>
@@ -151,7 +144,10 @@ onMounted(async () => {
                 </div>
               </div>
             </div>
-            <div class="flex overflow-x-auto gap-3 mb-10 pb-4 snap-x snap-mandatory scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+            <div
+              class="flex overflow-x-auto gap-3 pb-4 snap-x snap-mandatory scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
+              :class="{ 'mb-10': isLoggedIn, 'mb-3': !isLoggedIn }"
+            >
               <!-- Card 1: Orçamento Mensal (Foco Visual Principal) -->
               <div
                 class="min-w-[320px] sm:min-w-[400px] snap-start bg-white soft-shadow rounded-md overflow-hidden"
@@ -247,7 +243,7 @@ onMounted(async () => {
 
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Coluna 1: Lista de Compras Prioritárias (Main Content) -->
-            <div class="lg:col-span-2">
+            <div class="lg:col-span-2" :class="{ 'mt-6': !isLoggedIn }">
               <h2 class="text-2xl font-semibold text-gray-800 mb-4">
                 Listas Ativas e em Andamento
               </h2>
@@ -287,7 +283,7 @@ onMounted(async () => {
                       <p class="text-xs font-medium text-gray-500">Valor da lista</p>
                       <p class="text-lg font-bold text-gray-900">R$ 385,00</p>
                     </div>
-                    <div>
+                    <div v-if="isLoggedIn">
                       <p class="text-xs font-medium text-gray-500">
                         Gasto Real (até agora)
                       </p>
@@ -325,10 +321,10 @@ onMounted(async () => {
                     class="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-gray-100"
                   >
                     <div>
-                      <p class="text-xs font-medium text-gray-500">Estimado</p>
+                      <p class="text-xs font-medium text-gray-500">Valor da lista</p>
                       <p class="text-lg font-bold text-gray-900">R$ 120,00</p>
                     </div>
-                    <div>
+                    <div v-if="isLoggedIn">
                       <p class="text-xs font-medium text-gray-500">
                         Gasto Real
                       </p>
@@ -340,22 +336,31 @@ onMounted(async () => {
                   </div>
                 </div>
 
-                <!-- Placeholder caso não haja listas -->
-                <div
-                  id="no-lists-message"
-                  class="hidden text-center py-10 bg-white soft-shadow rounded-xl"
-                >
-                  <p class="text-lg text-gray-600">
-                    Você não tem listas ativas. Comece uma agora!
-                  </p>
-                </div>
-
                 <a
                   href="#"
-                  class="block text-center mt-6 text-gray-700 font-semibold hover:text-gray-500 transition duration-150"
+                  class="block text-center my-6 text-gray-700 font-semibold hover:text-gray-500 transition duration-150"
                 >
                   Ver histórico e listas concluídas &rarr;
                 </a>
+              </div>
+            </div>
+            <!-- Total de listas criadas (Esses cards serao transformados em componentes)-->
+            <div
+              v-if="!isLoggedIn"
+              class="mt-18 h-52 mb-4 min-w-[280px] snap-start bg-white soft-shadow rounded-md overflow-hidden"
+            >
+              <div class="bg-yellow-500 h-2"></div>
+              <div class="p-6">
+                <p class="text-sm font-medium text-gray-500">listas criadas no mês</p>
+                <p class="text-4xl font-bold text-gray-900 mt-1">5</p>
+                <div class="flex items-center mt-2">
+                  <p class="text-sm text-gray-500">
+                    Somatório de listas criadas <br/>(Entre ativas e concluídas)<br/>
+                    <span class="text-lg font-semibold text-green-600 bg-gray-50 px-2 py-0.5 rounded-full w-fit">
+                      R$ 319,00
+                    </span>
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -363,38 +368,11 @@ onMounted(async () => {
       </div>
     </div>
 
-    <Overlay v-if="createListTitleModal.isModalOpen">
-      <CreateListTitleModal
-        :purchase-list-title="createListTitleModal.listTitle"
-        :hasError="createListTitleModal.hasError"
-        :errorMessage="createListTitleModal.errorMessage"
-        @update:purchase-list-title="createListTitleModal.setListTitle($event)"
-        @navigate-to-create-purchase-list-view="
-          navigateToCreatePurchaseListView
-        "
-        class="fixed z-400"
-      />
-    </Overlay>
-
     <Overlay v-if="isBudgetModalOpen">
       <DefineBudgetModal
         @submit-budget-value="handleBudgetSubmit"
         @close="closeBudgetModal"
       />
     </Overlay>
-
-    <!-- <div
-      v-if="isModalOtherOptionsOpened"
-      class="w-fit bg-white p-6 rounded-dm shadow fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-500"
-    >
-      <ul class="flex flex-col gap-4">
-        <li>
-          Resumo Financeiro
-        </li>
-        <li>
-          Filtrar por período
-        </li>
-      </ul>
-    </div> -->
   </div>
 </template>
