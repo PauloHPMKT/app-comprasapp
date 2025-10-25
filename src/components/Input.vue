@@ -6,7 +6,7 @@ import { useStyles } from "../composables/useStyles";
 interface InputFieldProps {
   placeholder: string;
   isPassword?: boolean;
-  modelValue?: string;
+  modelValue?: string | number;
   hasIcon?: boolean;
   hasError?: boolean;
   errorMessage?: string;
