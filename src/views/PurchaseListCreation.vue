@@ -161,6 +161,7 @@ function savePurchaseList() {
     observation: '',
   }
   console.log(purchaseListData);
+  localStorage.setItem('purchase-list-data', JSON.stringify(purchaseListData));
   return router.push({ name: 'lists' });
 }
 
@@ -214,6 +215,7 @@ function removeItem() {
       <PageHeaderTitle
         :title="purchaseListTitle!"
         subtitle="Insira os dados dos produtos para preencera sua lista de compras."
+        has-back-navigation-arrow
         class="mb-0"
       />
 
@@ -247,8 +249,7 @@ function removeItem() {
     >
       <PurchaseItem
         v-for="(item, index) in reversedPurchaseItems"
-        :key="index"
-        v-bind="item"
+        :key="index"        v-bind="item"
         @delete-item="toggleRemoveItemModalConfirmation(item.orderId!)"
         @add-observation="openObservationNotePad(item.orderId!)"
       />
@@ -256,32 +257,33 @@ function removeItem() {
 
     <div
       v-if="purchaseItems.length"
-      class="h-[14%] sm:h-[15%] flex items-center justify-between text-gray-500 border-t border-gray-300"
+      class="sm:h-[15%] sm:flex items-center justify-between text-gray-500 border-t border-gray-300"
     >
-      <div>
+      <div class="py-3">
         <h4 class="font-bold sm:text-[20px]">Resumo da Compra:</h4>
-        <div class="sm:flex items-center gap-3">
-          <p>total de itens na lista:
-            <span class="sm:text-[20px] font-extrabold text-gray-900">
+        <div class="flex items-center gap-3">
+          <p class="text-[14px] sm:text-[20px]">total de itens na lista:
+            <span class="font-extrabold text-gray-900">
               {{ purchaseItems.length }}
             </span>
           </p>
-          <p>valor total da compra:
-            <span class="sm:text-[20px] font-extrabold text-gray-900">
+          <p class="text-[14px] sm:text-[20px]">total da compra:
+            <span class="font-extrabold text-gray-900">
               {{ calculateTotalItemsPrice }}
             </span>
           </p>
         </div>
       </div>
+      <!-- Mudar label do botao para Criar Lista -->
       <MainButton class="bg-gray-900 text-white w-fit h-11" @click="savePurchaseList">
-        Finalizar Lista
+        <p class="text-[14px] sm:text-[16px]">Criar Lista</p>
         <Icon icon="mdi:check" width="20" height="20" />
       </MainButton>
     </div>
 
     <!-- <NewCategory ref="showCreateNewCategoryModal" @create-category="addNewCategory" class="z-10" /> -->
 
-    <Overlay v-if="addObservation">
+    <Overlay v-if="addObservation" class="absolute z-30">
       <div class="w-[90%] shadow-2xl bg-amber-100 sm:w-[700px] h-[400px] flex flex-col items-center rounded-none relative">
         <div class="w-full bg-amber-300 p-4 flex items-center justify-center relative shadow-sm">
           <Icon
