@@ -1,14 +1,13 @@
 <script setup lang="ts">
-import { inject } from 'vue';
 import { Icon } from '@iconify/vue';
 import ModalLayout from './ModalLayout.vue';
 import InfoCard from './InfoCard.vue';
 import Input from './Input.vue';
 import MainButton from './MainButton.vue';
+import { useCreateListTitleModalStore } from '../store/createListTitleModal';
 
 interface CreateListTitleModalProps {
   purchaseListTitle: string;
-  resetModal: () => void;
   hasError?: boolean;
   errorMessage?: string;
 }
@@ -18,9 +17,9 @@ interface CreateListTitleModalEmits {
   (e: 'navigateToCreatePurchaseListView'): void;
 }
 
-defineProps<Omit<CreateListTitleModalProps, 'resetModal'>>();
+defineProps<CreateListTitleModalProps>();
 const emit = defineEmits<CreateListTitleModalEmits>();
-const modalActions = inject<CreateListTitleModalProps>('modalActions');
+const createListTitleModal = useCreateListTitleModalStore();
 
 function handleInputUpdate(value: string) {
   emit('update:purchaseListTitle', value);
@@ -31,7 +30,7 @@ function handleSubmitToNewList() {
 };
 
 function handleCloseModal() {
-  modalActions?.resetModal();
+  createListTitleModal.resetModal();
 };
 </script>
 

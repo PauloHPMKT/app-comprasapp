@@ -4,17 +4,25 @@ import { Icon } from '@iconify/vue';
 import { useRouter } from 'vue-router';
 import Content from './Content.vue';
 import ProfileCard from '../components/ProfileCard.vue';
-import horizontalLogo from '../assets/img/comprasapp-horizontal-logo.png'
+import MainButton from '../components/MainButton.vue';
+import Overlay from '../components/Overlay.vue';
+import NavigationMenu from '../components/NavigationMenu.vue';
 import { useAuthStore } from '../store/auth';
 import { useLoadingStore } from '../store/loading';
 import { useAutomaticModalStore } from '../store/automaticModal';
+import { useCreateListTitleModalStore } from '../store/createListTitleModal';
+import horizontalLogo from '../assets/img/comprasapp-horizontal-logo.png'
 
 const authStore = useAuthStore();
 const loadingStore = useLoadingStore();
 const automaticModal = useAutomaticModalStore();
+const createListTitleModal = useCreateListTitleModalStore();
 const router = useRouter();
 
 const userProfileCard = ref<typeof ProfileCard | null>(null);
+const navigationMenu = ref<typeof NavigationMenu | null>(null);
+
+const showMobileMenu = ref(false);
 
 const isLoading = computed(() => loadingStore.isLoading);
 
@@ -34,9 +42,25 @@ const username = computed(() => {
   return currentUser.value?.name ?? '';
 });
 
-function toCategories() {
-  localStorage.removeItem('purchase-list-title');
-  router.push('/app/categories')
+// function toCategories() {
+//   localStorage.removeItem('purchase-list-title');
+//   router.push('/app/categories')
+// }
+
+// function openCreateListModal() {
+//   modalActions?.open();
+// }
+
+function toggleNavigationMenuMobile() {
+  showMobileMenu.value = !showMobileMenu.value;
+}
+
+function closeNavigationMenuMobile() {
+  showMobileMenu.value = false;
+}
+
+function handleCreateNewList() {
+  createListTitleModal.openListTitleModal();
 }
 
 function toggleProfileCard() {
@@ -94,15 +118,15 @@ onMounted(async () => {
       <MainButton
         v-else
         @click="openCTALoginModal"
-        class="flex text-gray-500 bg-gray-200 w-[160px] sm:w-[250px] text-sm py-2 px-4 rounded-2xl cursor-pointer items-center"
+        class="flex text-gray-500 bg-gray-200 w-fit text-sm py-[8px] sm:py-2 px-4 rounded-2xl cursor-pointer items-center"
       >
         <Icon
           icon="fa7-regular:user"
           width="20"
           height="20"
-          class="mr-3 mb-4 sm:mb-0"
+          class="mr-3 sm:mb-0"
         />
-        <span class="text-[14px]">Você está no modo visitante</span>
+        <span class="text-[14px]">modo visitante</span>
       </MainButton>
     </div>
   </header>
@@ -161,8 +185,27 @@ onMounted(async () => {
         </div>
       </div>
     </div>
-    <div class="fixed bottom-6 right-4 bg-red-600 shadow-md/5 w-14 h-14 rounded-full flex items-center justify-center sm:hidden">
-      <Icon icon="tabler:menu-4" width="32" height="32" class="text-white" />
+    <div class="relative">
+      <Overlay v-if="showMobileMenu" class="absolute z-20" @click="closeNavigationMenuMobile">
+        <NavigationMenu
+          ref="navigationMenu"
+          :is-open="showMobileMenu"
+          @close="closeNavigationMenuMobile"
+          @create-new-list="handleCreateNewList"
+        />
+      </Overlay>
+      <div
+        class="fixed bottom-6 z-40 bg-red-600 shadow-md/5 w-14 h-14 rounded-full flex items-center justify-center sm:hidden border-2 border-white cursor-pointer transition-all duration-300 ease-in-out"
+        :class="showMobileMenu ? 'right-[272px]' : 'right-4'"
+        @click="toggleNavigationMenuMobile"
+      >
+        <Icon
+          icon="solar:menu-dots-bold"
+          class="text-white rotate-90"
+          width="26"
+          height="26"
+        />
+      </div>
     </div>
   </div>
 </template>
