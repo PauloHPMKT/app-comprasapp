@@ -58,7 +58,7 @@ function handleMyLists() {
         @click="handleCreateNewList"
         class="flex items-center gap-3 p-3 cursor-pointer transition-colors relative overflow-hidden group"
         :class="{
-          'bg-red-50 border-r-4 border-red-500 text-red-600': isCreateListActive,
+          'bg-red-50 border-r-4 border-red-500 text-red-400': isCreateListActive,
           'hover:bg-gray-100 active:bg-gray-200': !isCreateListActive
         }"
       >
@@ -71,9 +71,9 @@ function handleMyLists() {
           width="24"
           height="24"
           class="relative z-10"
-          :class="{ 'text-red-600': isCreateListActive, 'text-gray-700': !isCreateListActive }"
+          :class="{ 'text-red-400': isCreateListActive, 'text-gray-700': !isCreateListActive }"
         />
-        <p class="font-semibold relative z-10" :class="{ 'text-red-600': isCreateListActive }">
+        <p class="font-semibold relative z-10" :class="{ 'text-red-400': isCreateListActive }">
           Criar nova lista
         </p>
       </li>
@@ -81,7 +81,7 @@ function handleMyLists() {
         @click="handleMyLists"
         class="flex items-center gap-3 p-3 cursor-pointer transition-colors relative overflow-hidden group"
         :class="{
-          'bg-red-50 border-r-4 border-red-500 text-red-600': isMyListsActive,
+          'bg-red-50 border-r-4 border-red-500 text-red-400': isMyListsActive,
           'hover:bg-gray-100 active:bg-gray-200': !isMyListsActive
         }"
       >
@@ -89,14 +89,14 @@ function handleMyLists() {
           v-if="!isMyListsActive"
           class="absolute inset-0 bg-gray-300 scale-0 group-active:scale-100 transition-transform duration-500 ease-out origin-center opacity-30"
         ></span>
-        <Icon 
-          icon="tabler:list" 
-          width="24" 
-          height="24" 
+        <Icon
+          icon="tabler:list"
+          width="24"
+          height="24"
           class="relative z-10"
-          :class="{ 'text-red-600': isMyListsActive, 'text-gray-700': !isMyListsActive }"
+          :class="{ 'text-red-400': isMyListsActive, 'text-gray-700': !isMyListsActive }"
         />
-        <p class="font-semibold relative z-10" :class="{ 'text-red-600': isMyListsActive }">
+        <p class="font-semibold relative z-10" :class="{ 'text-red-400': isMyListsActive }">
           Minhas listas
         </p>
       </li>
