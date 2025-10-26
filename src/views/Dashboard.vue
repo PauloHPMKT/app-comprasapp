@@ -15,6 +15,7 @@ import { useAuthStore } from "../store/auth";
 import { useLoadingStore } from "../store/loading";
 import { useCreateListTitleModalStore } from "../store/createListTitleModal";
 import emptyMarket from "../assets/img/img-casas.png";
+import List from "../components/PurchasesLists/List.vue";
 
 const authStore = useAuthStore();
 const loadingStore = useLoadingStore();
@@ -115,7 +116,7 @@ onMounted(async () => {
         title="Visão Geral"
         subtitle="Acompanhe sua movimentação de compras e gerencie sua carteira"
       />
-      <div class="h-full w-full bg-gray-50 px-2 sm:px-4">
+      <div class="min-h-full w-full bg-gray-50 px-2 sm:px-4">
         <div class="pt-1">
           <MainButton
             @click="createListTitleModal.openListTitleModal"
@@ -152,7 +153,6 @@ onMounted(async () => {
               <div
                 class="min-w-[320px] sm:min-w-[400px] snap-start bg-white soft-shadow rounded-md overflow-hidden"
               >
-                <div class="bg-blue-600 h-2"></div>
                 <div
                   v-if="!budgetValue"
                   class="flex flex-col items-center justify-center mt-4"
@@ -194,7 +194,6 @@ onMounted(async () => {
 
               <!-- Total de listas criadas -->
               <div class="min-w-[280px] snap-start bg-white soft-shadow rounded-md overflow-hidden">
-                <div class="bg-yellow-500 h-2"></div>
                 <div class="p-6">
                   <p class="text-sm font-medium text-gray-500">listas criadas no mês</p>
                   <p class="text-4xl font-bold text-gray-900 mt-1">5</p>
@@ -211,7 +210,6 @@ onMounted(async () => {
 
               <!-- Card 2: Economia no Mês -->
               <div class="min-w-[280px] snap-start bg-white soft-shadow rounded-md overflow-hidden">
-                <div class="bg-green-500 h-2"></div>
                 <div class="p-6">
                   <p class="text-sm font-medium text-gray-500">Economia em Julho</p>
                   <p class="text-4xl font-bold text-gray-900 mt-1">R$ 85,50</p>
@@ -229,7 +227,6 @@ onMounted(async () => {
 
               <!-- Card 3: Preço Médio por Item -->
               <div class="min-w-[280px] snap-start bg-white soft-shadow overflow-hidden rounded-md">
-                <div class="bg-red-500 h-2"></div>
                 <div class="p-6">
                   <p class="text-sm font-medium text-gray-500">
                     Preço Médio por Item
@@ -249,51 +246,9 @@ onMounted(async () => {
               </h2>
               <div id="list-container" class="space-y-5">
                 <!-- Exemplo de Card de Lista (com detalhe financeiro) -->
-                <div
-                  @click="console.log('Abrir Lista 1')"
-                  class="list-card soft-shadow cursor-pointer bg-white p-5 rounded-md"
-                >
-                  <div class="flex justify-between items-start mb-2">
-                    <h3
-                      class="text-xl font-extrabold text-gray-900 flex items-center"
-                    >
-                      Compras Atacarejo O Irmão
-                      <span class="ml-3 text-xs font-semibold text-white bg-green-500 px-2 py-0.5 rounded-full">
-                        Compartilhada
-                      </span>
-                    </h3>
-                  </div>
-
-                  <!-- Progresso da Compra -->
-                  <p class="text-sm text-gray-600 mb-2">
-                    24/30 Itens (80%) Concluídos
-                  </p>
-                  <div class="w-full bg-gray-200 rounded-full h-2.5">
-                    <div
-                      class="bg-indigo-600 h-2.5 rounded-full"
-                      style="width: 80%"
-                    ></div>
-                  </div>
-
-                  <!-- Detalhes Financeiros -->
-                  <div
-                    class="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-gray-100"
-                  >
-                    <div>
-                      <p class="text-xs font-medium text-gray-500">Valor da lista</p>
-                      <p class="text-lg font-bold text-gray-900">R$ 385,00</p>
-                    </div>
-                    <div v-if="isLoggedIn">
-                      <p class="text-xs font-medium text-gray-500">
-                        Gasto Real (até agora)
-                      </p>
-                      <p class="text-lg font-bold text-red-600">R$ 410,50</p>
-                      <span class="text-xs text-red-500 font-medium"
-                        >+ R$ 25,50 acima do valor original</span
-                      >
-                    </div>
-                  </div>
-                </div>
+                 <ul>
+                   <List />
+                 </ul>
 
                 <!-- Exemplo de Lista 2 (Dentro do Orçamento) -->
                 <div
@@ -347,10 +302,9 @@ onMounted(async () => {
             <!-- Total de listas criadas (Esses cards serao transformados em componentes)-->
             <div
               v-if="!isLoggedIn"
-              class="mt-18 h-52 mb-4 min-w-[280px] snap-start bg-white soft-shadow rounded-md overflow-hidden"
+              class="sm:mt-18 h-52 mb-4 min-w-[280px] snap-start bg-white soft-shadow rounded-md overflow-hidden"
             >
-              <div class="bg-yellow-500 h-2"></div>
-              <div class="p-6">
+              <div class="p-6 shadow">
                 <p class="text-sm font-medium text-gray-500">listas criadas no mês</p>
                 <p class="text-4xl font-bold text-gray-900 mt-1">5</p>
                 <div class="flex items-center mt-2">

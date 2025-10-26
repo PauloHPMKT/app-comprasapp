@@ -12,6 +12,7 @@ import { useLoadingStore } from '../store/loading';
 import { useAutomaticModalStore } from '../store/automaticModal';
 import { useCreateListTitleModalStore } from '../store/createListTitleModal';
 import horizontalLogo from '../assets/img/comprasapp-horizontal-logo.png'
+import CreateListTitleModal from '../components/CreateListTitleModal.vue';
 
 const authStore = useAuthStore();
 const loadingStore = useLoadingStore();
@@ -41,6 +42,18 @@ const firstNameUpperLatter = computed(() => {
 const username = computed(() => {
   return currentUser.value?.name ?? '';
 });
+
+function navigateToCreatePurchaseListView() {
+  // Validação simples
+  if (!createListTitleModal.listTitle.trim()) {
+    createListTitleModal.setError("O nome da lista é obrigatório");
+    return;
+  }
+
+  localStorage.setItem("purchase-list-title", createListTitleModal.listTitle);
+  router.push({ name: "create-list" });
+  createListTitleModal.resetModal();
+}
 
 // function toCategories() {
 //   localStorage.removeItem('purchase-list-title');
@@ -179,6 +192,17 @@ onMounted(async () => {
         />
       </div>
     </div>
+
+    <Overlay v-if="createListTitleModal.isModalOpen">
+      <CreateListTitleModal
+        :purchase-list-title="createListTitleModal.listTitle"
+        :hasError="createListTitleModal.hasError"
+        :errorMessage="createListTitleModal.errorMessage"
+        @update:purchase-list-title="createListTitleModal.setListTitle($event)"
+        @navigate-to-create-purchase-list-view="navigateToCreatePurchaseListView"
+        class="fixed z-400"
+      />
+    </Overlay>
   </div>
 </template>
 
