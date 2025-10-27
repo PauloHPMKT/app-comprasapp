@@ -1,4 +1,4 @@
-import { reactive } from "vue";
+import { reactive, ref } from "vue";
 import type { Purchases } from "../types/purchases";
 import { FormatPrice } from "../helpers/formatPrice";
 import { useToast } from "./useToast";
@@ -18,6 +18,8 @@ const currentProduct = reactive<Purchases.Item>({
   totalItemPrice: 0,
 });
 const purchaseItems = reactive<Purchases.Item[]>([]);
+const observationDescription = ref<string>('');
+const editingItemId = ref<number | null>(null);
 
 export const usePurchaseList = () => {
   function fillCurrentProduct(item: Purchases.Item) {
@@ -27,6 +29,7 @@ export const usePurchaseList = () => {
 
     const product = {
       name: item.name,
+      orderId: purchaseItems.length + 1,
       quantity,
       price,
       category: item.category && { ...item.category },
@@ -50,10 +53,34 @@ export const usePurchaseList = () => {
     }
   }
 
+  function addObservationToCurrentProduct() {
+    const description = observationDescription.value;
+
+    // adicionando uma observação a um item já existente na lista
+    // const itemIndex = purchaseItems.findIndex(item => item.orderId === currentProduct.orderId);
+    // if (itemIndex !== -1) {
+    //   console.log('adding observation to existing item', currentProduct, purchaseItems);
+    //   console.log('itemIndex', itemIndex);
+    //   purchaseItems[itemIndex].observation = description;
+    //   return;
+    // }
+
+    // adicionando uma observação a um item que está sendo adicionado a lista
+    currentProduct.observation = description;
+  }
+
+  function cleanObservationInput() {
+    observationDescription.value = "";
+  }
+
   return {
     currentProduct,
     purchaseItems,
+    observationDescription,
+    editingItemId,
     fillCurrentProduct,
-    addProductToList
+    addProductToList,
+    addObservationToCurrentProduct,
+    cleanObservationInput,
   };
 }

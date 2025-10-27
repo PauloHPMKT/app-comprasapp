@@ -14,10 +14,12 @@ import { FormatPrice } from "../helpers/formatPrice";
 import { supabase } from "../services/api/supabase";
 
 const {
-  currentProduct,
   purchaseItems,
+  observationDescription,
   addProductToList,
   fillCurrentProduct,
+  addObservationToCurrentProduct,
+  cleanObservationInput,
 } = usePurchaseList();
 
 const editingItemId = ref<number | null>(null);
@@ -27,19 +29,11 @@ const addObservation = ref(false);
 const isRemoveConfirmationOpen = ref(false);
 const purchaseListTitle = ref(localStorage.getItem("purchase-list-title")!);
 // observation data
-const observationText = ref("");
 const observationQuestion = ref(false);
 const disableObservationQuestion = ref(false);
 // refs instances
 const addProductInputRef = ref<InstanceType<typeof AddProductInput>>();
 const addProductInputMobileRef = ref<InstanceType<typeof AddProductInput>>();
-
-//const showCreateNewCategoryModal = ref<typeof NewCategory | null>(null);
-function clearFormInput() {
-  addProductInput.value
-    ? addProductInputMobileRef.value?.clearForm()
-    : addProductInputRef.value?.clearForm();
-}
 
 const reversedPurchaseItems = computed(() => {
   return [...purchaseItems].reverse();
@@ -66,32 +60,20 @@ function toggleObservationQuestionModal() {
 function addProductInListOrObservation(product: Purchases.Item) {
   fillCurrentProduct(product);
 
-  // if (!localStorage.getItem('disable-observation-question')) {
-  //   toggleObservationQuestionModal();
-  //   return;
-  // }
+  if (!localStorage.getItem('disable-observation-question')) {
+    toggleObservationQuestionModal();
+    return;
+  }
 
   includeProductInList();
 }
 
 function includeObservationInList() {
-  const observation = observationText.value;
+  addObservationToCurrentProduct();
 
-  if (editingItemId.value) {
-    const itemIndex = purchaseItems.findIndex(item => item.orderId === editingItemId.value);
-    if (itemIndex !== -1) {
-      purchaseItems[itemIndex].observation = observation;
-    }
-    closeObservationNotePad();
-    return;
-  }
-
-  if (currentProduct.value) {
-    currentProduct.value.observation = observation;
-  }
-
+  addProductToList();
   closeObservationNotePad();
-  includeProductInList();
+  clearFormInput();
 }
 
 function includeProductInList() {
@@ -101,13 +83,20 @@ function includeProductInList() {
   }
 
   addProductToList();
-
   clearFormInput();
-  // currentProduct.value = null;
-  // observationText.value = "";
 
   if (observationQuestion.value) {
     toggleObservationQuestionModal();
+  }
+
+}
+
+function closeObservationNotePad() {
+  addObservation.value = false;
+  cleanObservationInput();
+
+  if (editingItemId.value) {
+    editingItemId.value = null;
   }
 }
 
@@ -169,19 +158,6 @@ function openObservationNotePad(OrderId?: number) {
   addObservation.value = true;
 }
 
-function closeObservationNotePad() {
-  addObservation.value = false;
-  observationText.value = "";
-
-  if (editingItemId.value) {
-    editingItemId.value = null;
-  }
-}
-
-function cleanObservationInput() {
-  observationText.value = "";
-}
-
 function toggleAddProductMobileInput() {
   addProductInput.value = !addProductInput.value;
 }
@@ -197,6 +173,13 @@ function toggleRemoveItemModalConfirmation(orderId?: number) {
 //   purchaseItems = purchaseItems.filter(item => item.orderId !== removingItemId.value);
 //   toggleRemoveItemModalConfirmation();
 // }
+
+function clearFormInput() {
+  addProductInput.value
+    ? addProductInputMobileRef.value?.clearForm()
+    : addProductInputRef.value?.clearForm();
+}
+
 </script>
 
 <template>
@@ -287,10 +270,10 @@ function toggleRemoveItemModalConfirmation(orderId?: number) {
           <h2 class="text-[#121212] text-[18px] sm:text-2xl font-bold">Observações</h2>
         </div>
         <textarea
-          v-model="observationText"
+          v-model="observationDescription"
           class="outline-none p-4 w-full h-[90%] resize-none"
         ></textarea>
-        <div v-if="observationText.length" class="w-full flex justify-end absolute bottom-0 right-4">
+        <div v-if="observationDescription.length" class="w-full flex justify-end absolute bottom-0 right-4">
           <MainButton class="text-gray-600 w-fit h-11 rounded-none hover:underline" @click="cleanObservationInput">
             Limpar anotaões
           </MainButton>
