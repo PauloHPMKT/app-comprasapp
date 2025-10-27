@@ -7,4 +7,9 @@ export class FormatPrice {
     const numberValue = typeof value === 'string' ? Number(value) : value;
     return this.formatCurrency('pt-BR', 'BRL').format(numberValue).replace('.', ',');
   }
+
+  static toBRLAsNumber(value: string | number): number {
+    const numberValue = typeof value === 'string' ? Number(value.replace(',', '.')) : value;
+    return Number(numberValue.toFixed(2));
+  }
 }
