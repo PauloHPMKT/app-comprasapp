@@ -7,11 +7,10 @@ import Overlay from "../components/Overlay.vue";
 import PurchaseItem from "../components/Item.vue";
 import ModalLayout from "../components/ModalLayout.vue";
 import AddProductInput from "../components/AddProductInput.vue";
+import { supabase } from "../services/api/supabase";
+import { usePurchaseList } from "../composables/usePurchaseList";
 import type { Purchases } from "types/purchases";
 import emptyListImage from "../assets/img/empty-list.png";
-import { usePurchaseList } from "../composables/usePurchaseList";
-import { FormatPrice } from "../helpers/formatPrice";
-import { supabase } from "../services/api/supabase";
 
 const {
   purchaseItems,
@@ -20,6 +19,7 @@ const {
   fillCurrentProduct,
   addObservationToCurrentProduct,
   cleanObservationInput,
+  calculateTotalItemsPrice,
 } = usePurchaseList();
 
 const editingItemId = ref<number | null>(null);
@@ -37,15 +37,6 @@ const addProductInputMobileRef = ref<InstanceType<typeof AddProductInput>>();
 
 const reversedPurchaseItems = computed(() => {
   return [...purchaseItems].reverse();
-});
-
-const calculateTotalItemsPrice = computed((): string => {
-  const total = purchaseItems.reduce((acc, item) => {
-    const itemPrice = Number(item.totalItemPrice) ?? 0;
-    return acc + itemPrice;
-  }, 0);
-
-  return FormatPrice.toBRL(total);
 });
 
 const itemToRemove = computed(() => {

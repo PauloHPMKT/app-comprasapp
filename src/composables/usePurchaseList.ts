@@ -1,4 +1,4 @@
-import { reactive, ref } from "vue";
+import { computed, reactive, ref } from "vue";
 import type { Purchases } from "../types/purchases";
 import { FormatPrice } from "../helpers/formatPrice";
 import { useToast } from "./useToast";
@@ -22,6 +22,15 @@ const observationDescription = ref<string>('');
 const editingItemId = ref<number | null>(null);
 
 export const usePurchaseList = () => {
+  const calculateTotalItemsPrice = computed((): string => {
+  const total = purchaseItems.reduce((acc, item) => {
+    const itemPrice = Number(item.totalItemPrice) ?? 0;
+    return acc + itemPrice;
+  }, 0);
+
+  return FormatPrice.toBRL(total);
+});
+
   function fillCurrentProduct(item: Purchases.Item) {
     const price = FormatPrice.toBRLAsNumber(item.price);
     const quantity = Number(item.quantity);
@@ -82,5 +91,6 @@ export const usePurchaseList = () => {
     addProductToList,
     addObservationToCurrentProduct,
     cleanObservationInput,
+    calculateTotalItemsPrice,
   };
 }
