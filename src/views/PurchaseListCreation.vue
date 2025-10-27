@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { useRouter } from "vue-router";
 import { Icon } from "@iconify/vue";
 import PageHeaderTitle from "../components/PageHeaderTitle.vue";
 import MainButton from "../components/MainButton.vue";
@@ -10,20 +9,22 @@ import ModalLayout from "../components/ModalLayout.vue";
 import AddProductInput from "../components/AddProductInput.vue";
 import type { Purchases } from "types/purchases";
 import emptyListImage from "../assets/img/empty-list.png";
-import { useToast } from "../composables/useToast";
+import { usePurchaseList } from "../composables/usePurchaseList";
 import { FormatPrice } from "../helpers/formatPrice";
+import { supabase } from "../services/api/supabase";
 
-const { addToast } = useToast();
-const router = useRouter();
-//const { purchaseItems, productItem, addPurchaseItemToList } = usePurchaseList();
+const {
+  currentProduct,
+  purchaseItems,
+  addProductToList,
+  fillCurrentProduct,
+} = usePurchaseList();
 
 const editingItemId = ref<number | null>(null);
 const removingItemId = ref<number | null>(null);
 const addProductInput = ref(false);
 const addObservation = ref(false);
 const isRemoveConfirmationOpen = ref(false);
-const purchaseItems = ref<Purchases.Item[]>([]);
-const currentProduct = ref<Purchases.Item | null>(null);
 const purchaseListTitle = ref(localStorage.getItem("purchase-list-title")!);
 // observation data
 const observationText = ref("");
@@ -41,11 +42,11 @@ function clearFormInput() {
 }
 
 const reversedPurchaseItems = computed(() => {
-  return [...purchaseItems.value].reverse();
+  return [...purchaseItems].reverse();
 });
 
 const calculateTotalItemsPrice = computed((): string => {
-  const total = purchaseItems.value.reduce((acc, item) => {
+  const total = purchaseItems.reduce((acc, item) => {
     const itemPrice = Number(item.totalItemPrice) ?? 0;
     return acc + itemPrice;
   }, 0);
@@ -54,7 +55,7 @@ const calculateTotalItemsPrice = computed((): string => {
 });
 
 const itemToRemove = computed(() => {
-  const item = purchaseItems.value.find(item => item.orderId === removingItemId.value);
+  const item = purchaseItems.find(item => item.orderId === removingItemId.value);
   return item ? item.name : '';
 });
 
@@ -63,22 +64,23 @@ function toggleObservationQuestionModal() {
 }
 
 function addProductInListOrObservation(product: Purchases.Item) {
-  currentProduct.value = product;
-  if (!localStorage.getItem('disable-observation-question')) {
-    toggleObservationQuestionModal();
-    return;
-  }
+  fillCurrentProduct(product);
 
-  return includeProductInList();
+  // if (!localStorage.getItem('disable-observation-question')) {
+  //   toggleObservationQuestionModal();
+  //   return;
+  // }
+
+  includeProductInList();
 }
 
 function includeObservationInList() {
   const observation = observationText.value;
 
   if (editingItemId.value) {
-    const itemIndex = purchaseItems.value.findIndex(item => item.orderId === editingItemId.value);
+    const itemIndex = purchaseItems.findIndex(item => item.orderId === editingItemId.value);
     if (itemIndex !== -1) {
-      purchaseItems.value[itemIndex].observation = observation;
+      purchaseItems[itemIndex].observation = observation;
     }
     closeObservationNotePad();
     return;
@@ -98,44 +100,18 @@ function includeProductInList() {
     disableObservationQuestion.value = true;
   }
 
-  if (currentProduct.value) {
-    const price = Number(String(currentProduct.value.price).replace(',', '.')) || 0;
-    const quantity = Number(currentProduct.value?.quantity) || 0;
-
-    const productToAdd = {
-      ...currentProduct.value,
-      orderId: purchaseItems.value.length + 1,
-      category: {
-        name: currentProduct.value?.category?.name || 'Sem categoria',
-        color: currentProduct.value?.category?.color || '#E5E7EB',
-        emoji: currentProduct.value?.category?.emoji || ''
-      },
-      observation: currentProduct.value?.observation || '',
-      price,
-      totalItemPrice: (quantity * price).toFixed(2),
-    };
-    purchaseItems.value.push(productToAdd);
-
-    if (addProductInput.value) {
-      addToast({
-        id: Date.now().toString(),
-        message: `O item "${productToAdd.name}" foi adicionado à lista!`,
-        type: 'success',
-        duration: 2000,
-      });
-    }
-  }
+  addProductToList();
 
   clearFormInput();
-  currentProduct.value = null;
-  observationText.value = "";
+  // currentProduct.value = null;
+  // observationText.value = "";
 
   if (observationQuestion.value) {
     toggleObservationQuestionModal();
   }
 }
 
-function savePurchaseList() {
+async function savePurchaseList() {
   if (localStorage.getItem('disable-observation-question')) {
     localStorage.removeItem("disable-observation-question");
     disableObservationQuestion.value = false;
@@ -148,21 +124,35 @@ function savePurchaseList() {
    */
 
   // aqui é provisório!!
-  const calculateTotalListPrices = purchaseItems.value.reduce((acc, item) => {
+  const calculateTotalListPrices = purchaseItems.reduce((acc, item) => {
     const itemPrice = Number(item.totalItemPrice) ?? 0;
     return acc + itemPrice;
   }, 0);
 
   const purchaseListData: Purchases.List = {
     title: purchaseListTitle.value,
-    items: purchaseItems.value,
-    totalItems: purchaseItems.value.length,
+    items: purchaseItems,
+    totalItems: purchaseItems.length,
     totalPrice: calculateTotalListPrices,
     observation: '',
   }
   console.log(purchaseListData);
   localStorage.setItem('purchase-list-data', JSON.stringify(purchaseListData));
-  return router.push({ name: 'lists' });
+  // const { data, error } = await supabase().from('lists').insert([
+  //   {
+  //     title: purchaseListData.title,
+  //     items: purchaseListData.items,
+  //     total_items: purchaseListData.totalItems,
+  //     total_price: purchaseListData.totalPrice,
+  //     observation: purchaseListData.observation,
+  //   }
+  // ])
+  // console.log({ data, error });
+  const { data, error } = await supabase()
+    .from('lists')
+    .select('*')
+  console.log(data)
+  //return router.push({ name: 'lists' });
 }
 
 function openObservationNotePad(OrderId?: number) {
@@ -170,7 +160,7 @@ function openObservationNotePad(OrderId?: number) {
     toggleObservationQuestionModal();
   }
 
-  const itemToAddObservation = purchaseItems.value.some(item => item.orderId === OrderId);
+  const itemToAddObservation = purchaseItems.some(item => item.orderId === OrderId);
   if (OrderId && itemToAddObservation) {
     editingItemId.value = OrderId;
     addObservation.value = true;
@@ -203,10 +193,10 @@ function toggleRemoveItemModalConfirmation(orderId?: number) {
   }
 }
 
-function removeItem() {
-  purchaseItems.value = purchaseItems.value.filter(item => item.orderId !== removingItemId.value);
-  toggleRemoveItemModalConfirmation();
-}
+// function removeItem() {
+//   purchaseItems = purchaseItems.filter(item => item.orderId !== removingItemId.value);
+//   toggleRemoveItemModalConfirmation();
+// }
 </script>
 
 <template>
@@ -249,7 +239,8 @@ function removeItem() {
     >
       <PurchaseItem
         v-for="(item, index) in reversedPurchaseItems"
-        :key="index"        v-bind="item"
+        :key="index"
+        v-bind="item"
         @delete-item="toggleRemoveItemModalConfirmation(item.orderId!)"
         @add-observation="openObservationNotePad(item.orderId!)"
       />
@@ -393,9 +384,9 @@ function removeItem() {
               >
                 Cancelar
               </MainButton>
-              <MainButton @click="removeItem" class="bg-red-500 text-white h-11 w-24  rounded-md">
+              <!-- <MainButton @click="removeItem" class="bg-red-500 text-white h-11 w-24  rounded-md">
                 Remover
-              </MainButton>
+              </MainButton> -->
             </div>
           </div>
         </template>
